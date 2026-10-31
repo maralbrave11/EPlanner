@@ -7,3 +7,4 @@
 - 2026-10-31 — Decision: app is free, no daily question limit (`docs/decisions/006-free-no-limit.md`).
 - 2026-10-31 — Fix (base): pages no longer crash when Supabase env vars are missing.
 - 2026-10-31 — `trip-assistant` Stage 1 frontend done (mock answers): chat page, recommendation/option cards, follow-up, loading/error/not-found states, conversation sidebar. Branch `feature/trip-assistant`.
+- 2026-10-31 — Stage 2: merged `feature/trip-assistant` into `main`; review fixes: site header with log in / log out, login returns to `?next=` page; added `sql/trip-assistant.sql`.

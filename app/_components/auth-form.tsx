@@ -40,7 +40,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
       return;
     }
 
-    router.push("/");
+    // Return to the page that sent the user here (only same-site paths).
+    const next = new URLSearchParams(window.location.search).get("next");
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    router.push(safeNext);
     router.refresh();
   }
 

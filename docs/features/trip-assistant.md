@@ -44,7 +44,10 @@ Users ask any travel question and get one clear **recommendation** plus **2–4 
 - [x] `npm run build`, `tsc`, and `npm run lint` pass; tested in a real browser (headless Edge)
 
 ## 6. SQL notes
-(Stage 2)
+- Tables: `assistant_conversations` (id, user_id, title, created_at, updated_at) and `assistant_messages` (id, conversation_id, role, content, answer jsonb, created_at). File: `sql/trip-assistant.sql`.
+- Conversation id is generated in the browser so the page can navigate before the answer arrives.
+- RLS: users only see/change their own conversations and messages; anonymous visitors have no access. Messages cannot be edited (insert/select/delete only).
+- Trigger: inserting a message bumps the conversation `updated_at` (sidebar order).
 
 ## 7. Server notes
 (Stage 3) Replace `askMockAssistant` with a call to the trip-assistant API route (Claude, server-side); load and save conversations from Supabase instead of `MOCK_CONVERSATIONS`.
