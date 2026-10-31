@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/i18n-provider";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
 
 export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,14 +35,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
     if (error) {
       setError(
         error.code === "over_email_send_rate_limit"
-          ? "Too many emails were sent recently. If you already signed up, try logging in. Otherwise wait about an hour and try again."
+          ? t("auth.rateLimit")
           : error.message,
       );
       return;
     }
 
     if (!isLogin && !data.session) {
-      setMessage("Check your email to confirm your account, then log in.");
+      setMessage(t("auth.checkEmail"));
       return;
     }
 
@@ -58,16 +60,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
     <div className="hero-glow flex flex-1 items-start justify-center px-4 py-14 sm:py-20">
       <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-7 shadow-sm">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {isLogin ? "Welcome back" : "Create your account"}
+          {isLogin ? t("auth.loginTitle") : t("auth.signupTitle")}
         </h1>
         <p className="mt-1 mb-6 text-sm text-muted">
           {isLogin
-            ? "Log in to ask questions and see your saved conversations."
-            : "Sign up to ask travel questions and save your conversations."}
+            ? t("auth.loginIntro")
+            : t("auth.signupIntro")}
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5 text-sm font-medium">
-            Email
+            {t("auth.email")}
             <input
               type="email"
               required
@@ -78,7 +80,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             />
           </label>
           <label className="flex flex-col gap-1.5 text-sm font-medium">
-            Password
+            {t("auth.password")}
             <input
               type="password"
               required
@@ -104,16 +106,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
             disabled={loading}
             className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 font-medium text-white shadow-md shadow-emerald-600/20 transition hover:shadow-lg disabled:opacity-50"
           >
-            {loading ? "Please wait…" : isLogin ? "Log in" : "Sign up"}
+            {loading ? t("auth.wait") : isLogin ? t("auth.login") : t("auth.signup")}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-muted">
-          {isLogin ? "No account yet? " : "Already have an account? "}
+          {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}{" "}
           <Link
             href={isLogin ? "/signup" : "/login"}
             className="font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
           >
-            {isLogin ? "Sign up" : "Log in"}
+            {isLogin ? t("auth.signup") : t("auth.login")}
           </Link>
         </p>
       </div>

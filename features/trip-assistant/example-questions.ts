@@ -1,7 +1,5 @@
+import type { MessageKey } from "@/lib/i18n/messages";
+
 // Clickable starter questions on the empty /trip-assistant page.
-export const EXAMPLE_QUESTIONS = [
-  "Where should I stay in Tokyo for 3 nights on a mid budget?",
-  "How do I get from the airport to the city center in Seoul?",
-  "What can I do in Ulaanbaatar in winter?",
-  "Is it cheaper to travel by train or bus from Beijing to Shanghai?",
-];
+// The texts live in lib/i18n/messages/<language>.ts (keys ex.1 ... ex.4).
+export const EXAMPLE_QUESTION_KEYS = ["ex.1", "ex.2", "ex.3", "ex.4"] as const satisfies readonly MessageKey[];

@@ -14,6 +14,7 @@ import type {
   PriceRange,
   RouteAnswer,
 } from "@/features/trip-assistant/types";
+import { getLanguage, type LanguageCode } from "@/lib/i18n/languages";
 
 const MODEL = "claude-sonnet-5-5";
 
@@ -95,7 +96,7 @@ Prices:
 - If something has nothing to do with money (for example, a visa rule or a cultural tip), set price to null.
 - If you are unsure, widen the range and say so. Never invent specific deals, discounts, events, shops, or brands you cannot stand behind.
 
-Style: plain, friendly English. Be specific (real neighborhoods, lines, places).`;
+Style: plain and friendly. Be specific (real neighborhoods, lines, places).`;
 
 const ASK_PROMPT = `${BASE_PROMPT}
 
@@ -127,6 +128,12 @@ The traveler said yes to a suggested visiting order for the place you just descr
 - totalMinutes: the rough total, or null.
 - tips: 2-4 practical tips (best time to arrive, what to bring, how to save money).`;
 
+/** Tells Claude which language to write in (the language picked in the app). */
+function languageInstruction(language: LanguageCode) {
+  const { ai } = getLanguage(language);
+  return `Language: write every text field of your answer in ${ai}, even if the traveler's question or earlier messages are in another language. Keep the structure and field names exactly as required. Write names of places, stores and brands the way people in that language normally write them (use the original Latin spelling for brands). Keep prices in USD unless the traveler asks for another currency.`;
+}
+
 let client: Anthropic | null = null;
 function getClient() {
   // Reads ANTHROPIC_API_KEY from the environment (.env.local / Vercel env vars).
@@ -141,8 +148,8 @@ export type HistoryTurn =
 
 /** What the traveler asked for. `topic` is the place name for "detail" and "route". */
 export type TripAssistantRequest =
-  | { mode: "ask"; question: string }
-  | { mode: Exclude<AssistantMode, "ask">; topic: string };
+  | { mode: "ask"; question: string; language: LanguageCode }
+  | { mode: Exclude<AssistantMode, "ask">; topic: string; language: LanguageCode };
 
 export class TripAssistantRefusal extends Error {}
 
@@ -221,6 +228,7 @@ async function callClaude<T extends z.ZodType>(
   systemPrompt: string,
   history: HistoryTurn[],
   userMessage: string,
+  language: LanguageCode,
 ): Promise<z.infer<T>> {
   const messages: Anthropic.Beta.BetaMessageParam[] = history.map((turn) =>
     turn.role === "user"
@@ -239,7 +247,7 @@ async function callClaude<T extends z.ZodType>(
     // If a safety classifier declines, retry on Anthropic's recommended fallback model.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    system: `${systemPrompt}\n\nToday's date is ${today}.`,
+    system: `${systemPrompt}\n\n${languageInstruction(language)}\n\nToday's date is ${today}.`,
     messages,
   });
 
@@ -258,7 +266,7 @@ export async function askTripAssistant(
 ): Promise<AssistantAnswer> {
   switch (request.mode) {
     case "ask":
-      return toOptionsAnswer(await callClaude(OptionsSchema, ASK_PROMPT, history, request.question));
+      return toOptionsAnswer(await callClaude(OptionsSchema, ASK_PROMPT, history, request.question, request.language));
     case "detail":
       return toDetailAnswer(
         await callClaude(
@@ -266,6 +274,7 @@ export async function askTripAssistant(
           DETAIL_PROMPT,
           history,
           `Tell me more about "${request.topic}". Only about this place.`,
+          request.language,
         ),
       );
     case "route":
@@ -275,6 +284,7 @@ export async function askTripAssistant(
           ROUTE_PROMPT,
           history,
           `Yes, please plan the best order to visit "${request.topic}".`,
+          request.language,
         ),
       );
   }

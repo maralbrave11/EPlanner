@@ -48,5 +48,5 @@ Rules the AI assistant must follow in every session. Read `docs/plan.md` for the
 ## Tech notes
 - Next.js 16 (App Router, TypeScript, Tailwind v4). APIs differ from older versions: read `node_modules/next/dist/docs/` before using unfamiliar APIs (see `AGENTS.md`).
   - Middleware is now `proxy.ts`. `cacheComponents` is on: runtime data (`cookies()`, `headers()`) must sit inside `<Suspense>`.
-- UI language: **English**.
-- Base (not feature work): `app/login`, `app/signup`, `app/_components/auth-form.tsx`, `lib/supabase/*`, `proxy.ts`.
+- UI language: 10 languages (see `docs/decisions/002-language-currency.md`). Never hard-code user-visible text in components: add a key to `lib/i18n/messages/en.ts` and every other language file, then use `t("key")` from `useI18n()`. Use logical Tailwind classes (`ms-`, `me-`, `ps-`, `pe-`, `text-start`, `border-e`) so Arabic (right-to-left) looks right.
+- Base (not feature work): `lib/i18n`, `app/login`, `app/signup`, `app/_components/auth-form.tsx`, `lib/supabase/*`, `proxy.ts`.

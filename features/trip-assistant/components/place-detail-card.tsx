@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/i18n-provider";
 import type { PlaceDetailAnswer } from "../types";
 import { PriceTag } from "./answer-card";
 
@@ -17,13 +20,14 @@ export function PlaceDetailCard({
   onDeclineRoute,
   disabled,
 }: PlaceDetailCardProps) {
+  const { t } = useI18n();
   const { title, summary, sections, facts, price, caveat, routeQuestion } = answer;
 
   return (
     <div className="rise-in flex flex-col gap-4">
       <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
         <span className="mb-2 inline-flex rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-sky-800 uppercase dark:bg-sky-950 dark:text-sky-200">
-          More about this place
+          {t("det.badge")}
         </span>
         <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">{summary}</p>
@@ -80,7 +84,7 @@ export function PlaceDetailCard({
                 onClick={onWantRoute}
                 className="rounded-full bg-sky-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-50"
               >
-                Yes, plan my route
+                {t("det.yes")}
               </button>
             )}
             {onDeclineRoute && (
@@ -90,7 +94,7 @@ export function PlaceDetailCard({
                 onClick={onDeclineRoute}
                 className="rounded-full border border-sky-300 px-4 py-1.5 text-sm font-medium transition hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:hover:bg-sky-900"
               >
-                No thanks
+                {t("det.no")}
               </button>
             )}
           </div>

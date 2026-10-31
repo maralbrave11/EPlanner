@@ -165,7 +165,7 @@ Rules:
 
 ## 8. Open Questions (owner to decide)
 
-1. ~~Primary UI language~~ **Decided: English.**
+1. ~~Primary UI language~~ **Decided: 10 languages with a picker, English default** (see `decisions/002-language-currency.md`).
 2. ~~Default currency~~ **Decided: USD by default; the AI uses another currency if the user asks.**
 3. ~~Guests or login?~~ **Decided: login required** (answers are saved per user).
 4. ~~Daily question limit~~ **Decided: free, no daily limit** (see `decisions/006-free-no-limit.md`).

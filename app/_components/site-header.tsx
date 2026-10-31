@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useI18n } from "@/lib/i18n/i18n-provider";
 import { createClient } from "@/lib/supabase/client";
+import { LanguageSwitcher } from "./language-switcher";
 
 const isSupabaseConfigured = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -26,6 +28,7 @@ function Logo() {
 /** Top bar: app name + login state (log in / sign up, or email + log out). */
 export function SiteHeader() {
   const router = useRouter();
+  const { t } = useI18n();
   const [user, setUser] = useState<User | null>(null);
   // Without Supabase config there is no user to wait for.
   const [ready, setReady] = useState(!isSupabaseConfigured);
@@ -52,7 +55,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-background/80 px-4 py-3 backdrop-blur sm:px-6">
       <Logo />
-      <nav className="flex items-center gap-3 text-sm">
+      <nav className="flex items-center gap-2 text-sm sm:gap-3">
+        <LanguageSwitcher />
         {!ready ? null : user ? (
           <>
             <span className="hidden max-w-48 truncate text-muted sm:inline">{user.email}</span>
@@ -60,26 +64,26 @@ export function SiteHeader() {
               href="/trip-assistant"
               className="rounded-full px-3 py-1.5 font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950"
             >
-              Ask
+              {t("nav.ask")}
             </Link>
             <button
               type="button"
               onClick={logOut}
               className="rounded-full border border-line px-3.5 py-1.5 font-medium hover:bg-surface"
             >
-              Log out
+              {t("nav.logout")}
             </button>
           </>
         ) : (
           <>
             <Link href="/login" className="rounded-full px-3 py-1.5 font-medium hover:bg-surface">
-              Log in
+              {t("nav.login")}
             </Link>
             <Link
               href="/signup"
               className="rounded-full bg-emerald-600 px-4 py-1.5 font-medium text-white shadow-sm hover:bg-emerald-700"
             >
-              Sign up
+              {t("nav.signup")}
             </Link>
           </>
         )}

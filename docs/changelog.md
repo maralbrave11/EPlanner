@@ -14,3 +14,4 @@
 - 2026-10-31 — "Tell me more" now shows details about only that place (e.g. stores and brands in an outlet) and offers a suggested visiting order; "Yes, plan my route" returns numbered steps. New API fields `mode` and `topic`; no SQL change.
 - 2026-10-31 — Question box is no longer pinned to the bottom of the screen (it covered answers while scrolling); conversations can be deleted from the sidebar (confirmation, trash button). No SQL change.
 - 2026-10-31 — Conversation sidebar is now sticky on desktop and scrolls independently of the page.
+- 2026-10-31 — Multi-language: 10 languages (en, mn, zh, hi, es, fr, ar, pt, ru, ja) with a header language picker, saved in the browser; UI text in `lib/i18n/messages`; AI answers in the chosen language; Arabic right-to-left; question box ignores Enter while an IME is composing. Decision 002 updated.

@@ -66,3 +66,9 @@ Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains
 
 ## 8. Status
 Stage 3 code done (branch `feature/trip-assistant`, merged to `main`). End-to-end test with a real user pending: needs the SQL run in Supabase and `ANTHROPIC_API_KEY` set.
+
+## 9. Languages
+- All text shown in the feature comes from `lib/i18n/messages/<language>.ts` (`useI18n().t(key)`); prices use the language's number format.
+- The browser sends `language` in the API request; Claude writes every text field in that language. Old saved answers stay in the language they were written in.
+- API errors return a `code` (`err.<code>` keys) so the message appears in the user's language.
+- Quirk: the text sent as the user's message ("Tell me more about …") is saved in the language used at that moment.

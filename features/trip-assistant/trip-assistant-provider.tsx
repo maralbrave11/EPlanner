@@ -7,6 +7,8 @@
 // between /trip-assistant and /trip-assistant/[conversationId].
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import type { LanguageCode } from "@/lib/i18n/languages";
 import { createClient } from "@/lib/supabase/client";
 import type {
   AssistantAnswer,
@@ -15,9 +17,21 @@ import type {
   AssistantMode,
 } from "./types";
 
+/** An error from the API route. `code` maps to a translated `err.<code>` message. */
+class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly code?: string,
+  ) {
+    super(message);
+  }
+}
+
 type FailedRequest = {
   message: string;
   question: string;
+  /** Error code for a translated message (see err.* in lib/i18n/messages). */
+  code?: string;
   mode?: AssistantMode;
   topic?: string;
 };
@@ -54,28 +68,33 @@ async function askServer(
   conversationId: string,
   question: string,
   mode: AssistantMode,
-  topic?: string,
+  topic: string | undefined,
+  language: LanguageCode,
 ): Promise<AssistantAnswer> {
   let res: Response;
   try {
     res = await fetch("/api/trip-assistant", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId, question, mode, topic }),
+      body: JSON.stringify({ conversationId, question, mode, topic, language }),
     });
   } catch {
-    throw new Error("Network error. Check your connection and try again.");
+    throw new ApiError("Network error. Check your connection and try again.", "network");
   }
   const data = (await res.json().catch(() => null)) as
-    | { answer?: AssistantAnswer; error?: string }
+    | { answer?: AssistantAnswer; error?: string; code?: string }
     | null;
   if (!res.ok || !data?.answer) {
-    throw new Error(data?.error ?? "The assistant could not answer right now. Please try again.");
+    throw new ApiError(
+      data?.error ?? "The assistant could not answer right now. Please try again.",
+      data?.code ?? "claude",
+    );
   }
   return data.answer;
 }
 
 export function TripAssistantProvider({ children }: { children: React.ReactNode }) {
+  const { lang } = useI18n(); // the AI answers in this language
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
   const [listStatus, setListStatus] = useState<ListStatus>("loading");
   const [pending, setPending] = useState<Record<string, boolean>>({});
@@ -135,7 +154,11 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
           console.error("trip-assistant: could not load messages", error);
           setErrors((e) => ({
             ...e,
-            [conversationId]: { message: "Could not load this conversation.", question: "" },
+            [conversationId]: {
+              message: "Could not load this conversation.",
+              code: "loadMessages",
+              question: "",
+            },
           }));
         }
         setConversations((prev) =>
@@ -167,16 +190,17 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
       setPending((p) => ({ ...p, [conversationId]: true }));
       setErrors((e) => ({ ...e, [conversationId]: undefined }));
       try {
-        const answer = await askServer(conversationId, question, mode, topic);
+        const answer = await askServer(conversationId, question, mode, topic, lang);
         appendMessage(conversationId, { id: newId(), role: "assistant", answer });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Something went wrong.";
-        setErrors((e) => ({ ...e, [conversationId]: { message, question, mode, topic } }));
+        const code = err instanceof ApiError ? err.code : "generic";
+        setErrors((e) => ({ ...e, [conversationId]: { message, code, question, mode, topic } }));
       } finally {
         setPending((p) => ({ ...p, [conversationId]: false }));
       }
     },
-    [appendMessage],
+    [appendMessage, lang],
   );
 
   const startConversation = useCallback(

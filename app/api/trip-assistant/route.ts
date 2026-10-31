@@ -1,5 +1,5 @@
 // POST /api/trip-assistant
-// Body: { conversationId: uuid, question: string, mode?: "ask" | "detail" | "route", topic?: string }
+// Body: { conversationId: uuid, question: string, mode?: "ask" | "detail" | "route", topic?: string, language?: LanguageCode }
 //   ask    (default): normal question → recommendation + options
 //   detail: "Tell me more" about `topic` → what is inside that place + route offer
 //   route:  "Yes, plan my route" for `topic` → suggested visiting order
@@ -9,6 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { AssistantAnswer } from "@/features/trip-assistant/types";
+import { LANGUAGE_CODES } from "@/lib/i18n/languages";
 import { createClient } from "@/lib/supabase/server";
 import {
   askTripAssistant,
@@ -27,11 +28,14 @@ const BodySchema = z
     question: z.string().trim().min(1).max(2000),
     mode: z.enum(["ask", "detail", "route"]).default("ask"),
     topic: z.string().trim().min(1).max(200).optional(),
+    // Language the AI answers in (the language picked in the app).
+    language: z.enum(LANGUAGE_CODES).default("en"),
   })
   .refine((b) => b.mode === "ask" || b.topic, { message: "topic is required" });
 
-function errorResponse(status: number, error: string) {
-  return NextResponse.json({ error }, { status });
+/** `code` lets the browser show the message in the user's language (see err.* in lib/i18n/messages). */
+function errorResponse(status: number, code: string, error: string) {
+  return NextResponse.json({ error, code }, { status });
 }
 
 function titleFrom(question: string) {
@@ -40,14 +44,14 @@ function titleFrom(question: string) {
 
 export async function POST(request: Request) {
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return errorResponse(400, "Please enter a question (up to 2000 characters).");
-  const { conversationId, question, mode, topic } = parsed.data;
+  if (!parsed.success) return errorResponse(400, "badInput", "Please enter a question (up to 2000 characters).");
+  const { conversationId, question, mode, topic, language } = parsed.data;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return errorResponse(401, "Please log in to ask questions.");
+  if (!user) return errorResponse(401, "login", "Please log in to ask questions.");
 
   // Existing conversation? RLS returns nothing if it belongs to someone else.
   const { data: existing, error: lookupError } = await supabase
@@ -57,11 +61,11 @@ export async function POST(request: Request) {
     .maybeSingle();
   if (lookupError) {
     console.error("trip-assistant: conversation lookup failed", lookupError);
-    return errorResponse(500, "Could not load your conversation. Please try again.");
+    return errorResponse(500, "load", "Could not load your conversation. Please try again.");
   }
 
   // "Tell me more" and "plan my route" only make sense inside an existing conversation.
-  if (mode !== "ask" && !existing) return errorResponse(404, "Conversation not found.");
+  if (mode !== "ask" && !existing) return errorResponse(404, "notFound", "Conversation not found.");
 
   let history: HistoryTurn[] = [];
   if (existing) {
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
       .limit(MAX_HISTORY_MESSAGES);
     if (error) {
       console.error("trip-assistant: history load failed", error);
-      return errorResponse(500, "Could not load your conversation. Please try again.");
+      return errorResponse(500, "load", "Could not load your conversation. Please try again.");
     }
     history = rows.reverse().map((r) =>
       r.role === "user"
@@ -89,25 +93,25 @@ export async function POST(request: Request) {
   try {
     answer = await askTripAssistant(
       history,
-      mode === "ask" ? { mode, question } : { mode, topic: topic! },
+      mode === "ask" ? { mode, question, language } : { mode, topic: topic!, language },
     );
   } catch (err) {
     if (err instanceof TripAssistantRefusal) {
-      return errorResponse(422, "Sorry, I can't help with that question. Try asking it differently.");
+      return errorResponse(422, "refused", "Sorry, I can't help with that question. Try asking it differently.");
     }
     if (err instanceof Anthropic.RateLimitError) {
-      return errorResponse(429, "The assistant is busy right now. Please try again in a moment.");
+      return errorResponse(429, "busy", "The assistant is busy right now. Please try again in a moment.");
     }
     if (err instanceof Anthropic.AuthenticationError) {
       console.error("trip-assistant: invalid ANTHROPIC_API_KEY");
-      return errorResponse(500, "The assistant is not configured correctly.");
+      return errorResponse(500, "config", "The assistant is not configured correctly.");
     }
     if (err instanceof Anthropic.APIError) {
       console.error(`trip-assistant: Claude API error ${err.status}`, err.message);
-      return errorResponse(502, "The assistant could not answer right now. Please try again.");
+      return errorResponse(502, "claude", "The assistant could not answer right now. Please try again.");
     }
     console.error("trip-assistant: unexpected error", err);
-    return errorResponse(502, "The assistant could not answer right now. Please try again.");
+    return errorResponse(502, "claude", "The assistant could not answer right now. Please try again.");
   }
 
   if (!existing) {
@@ -116,7 +120,7 @@ export async function POST(request: Request) {
       .insert({ id: conversationId, user_id: user.id, title: titleFrom(question) });
     if (error) {
       console.error("trip-assistant: conversation insert failed", error);
-      return errorResponse(500, "Could not save your conversation. Please try again.");
+      return errorResponse(500, "save", "Could not save your conversation. Please try again.");
     }
   }
 

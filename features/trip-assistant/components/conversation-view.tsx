@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n/i18n-provider";
 import { useTripAssistant } from "../trip-assistant-provider";
 import { AnswerCard } from "./answer-card";
 import { PlaceDetailCard } from "./place-detail-card";
@@ -13,6 +14,7 @@ import { TripAssistantShell } from "./trip-assistant-shell";
 export function ConversationView({ conversationId }: { conversationId: string }) {
   const { conversations, listStatus, isPending, getError, loadMessages, sendMessage, retry } =
     useTripAssistant();
+  const { t, tError } = useI18n();
   const conversation = conversations.find((c) => c.id === conversationId);
   const pending = isPending(conversationId);
   const error = getError(conversationId);
@@ -36,7 +38,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
     return (
       <TripAssistantShell activeId={conversationId}>
         <p role="alert" className="py-12 text-center text-rose-700 dark:text-rose-300">
-          Could not load your conversations. Please refresh the page.
+          {t("view.listError")}
         </p>
       </TripAssistantShell>
     );
@@ -46,7 +48,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
     return (
       <TripAssistantShell activeId={conversationId}>
         <p role="status" className="py-12 text-center text-sm text-muted">
-          Loading conversation…
+          {t("view.loading")}
         </p>
       </TripAssistantShell>
     );
@@ -56,12 +58,12 @@ export function ConversationView({ conversationId }: { conversationId: string })
     return (
       <TripAssistantShell>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-          <h1 className="text-xl font-semibold">Conversation not found</h1>
+          <h1 className="text-xl font-semibold">{t("view.notFoundTitle")}</h1>
           <p className="text-muted">
-            It may have been deleted, or the link is wrong.
+            {t("view.notFoundText")}
           </p>
           <Link href="/trip-assistant" className="font-medium text-emerald-700 underline">
-            Ask a new question
+            {t("view.askNew")}
           </Link>
         </div>
       </TripAssistantShell>
@@ -86,7 +88,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
         {messages.map((message, index) =>
           message.role === "user" ? (
             <div key={message.id} className="flex justify-end">
-              <p className="rise-in max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-emerald-600 to-teal-600 px-4 py-2.5 text-white shadow-sm">
+              <p className="rise-in max-w-[80%] rounded-2xl rounded-be-md bg-gradient-to-br from-emerald-600 to-teal-600 px-4 py-2.5 text-white shadow-sm">
                 {message.content}
               </p>
             </div>
@@ -100,7 +102,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
                 index === lastAssistantIndex && !declinedRoutes.has(message.id)
                   ? () => {
                       const place = message.answer.kind === "detail" ? message.answer.title : "";
-                      sendMessage(conversationId, `Yes, plan my route for "${place}".`, "route", place);
+                      sendMessage(conversationId, t("view.routeMsg", { place }), "route", place);
                     }
                   : undefined
               }
@@ -122,7 +124,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
                 index === lastOptionsIndex
                   ? (title) => {
                       setFollowUpPrompt(null);
-                      sendMessage(conversationId, `Tell me more about "${title}".`, "detail", title);
+                      sendMessage(conversationId, t("view.tellMeMsg", { title }), "detail", title);
                     }
                   : undefined
               }
@@ -142,7 +144,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
           <div role="status" className="flex flex-col gap-3">
             <p className="flex items-center gap-2 text-sm text-muted">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              Finding the best options for you…
+              {t("view.finding")}
             </p>
             <div className="skeleton h-24 rounded-2xl" />
             <div className="grid gap-3 sm:grid-cols-2">
@@ -157,14 +159,14 @@ export function ConversationView({ conversationId }: { conversationId: string })
             role="alert"
             className="flex flex-wrap items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200"
           >
-            <span className="flex-1">{error.message}</span>
+            <span className="flex-1">{tError(error.code) ?? error.message}</span>
             {error.question && (
               <button
                 type="button"
                 onClick={() => retry(conversationId)}
                 className="rounded-md bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-700"
               >
-                Try again
+                {t("view.tryAgain")}
               </button>
             )}
           </div>
@@ -175,13 +177,13 @@ export function ConversationView({ conversationId }: { conversationId: string })
 
       <div className="pt-2 pb-4">
         {followUpPrompt && (
-          <p className="mb-2 text-sm text-sky-700 dark:text-sky-300">Answering: {followUpPrompt}</p>
+          <p className="mb-2 text-sm text-sky-700 dark:text-sky-300">{t("view.answering", { question: followUpPrompt })}</p>
         )}
         <QuestionInput
           ref={inputRef}
           onSubmit={ask}
           disabled={pending}
-          placeholder={followUpPrompt ? "Type your answer…" : "Ask a follow-up question…"}
+          placeholder={followUpPrompt ? t("input.answerPlaceholder") : t("input.followUp")}
         />
       </div>
     </TripAssistantShell>

@@ -1,26 +1,33 @@
-import type { RouteAnswer } from "../types";
+"use client";
 
-function formatMinutes(total: number) {
-  const hours = Math.floor(total / 60);
-  const minutes = total % 60;
-  if (hours === 0) return `${minutes} min`;
-  return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
-}
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages";
+import type { RouteAnswer } from "../types";
 
 /** Reply to "Yes, plan my route": numbered visiting order with tips. */
 export function RouteCard({ answer }: { answer: RouteAnswer }) {
+  const { t } = useI18n();
   const { title, summary, steps, totalMinutes, tips } = answer;
+
+  function formatMinutes(total: number) {
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    const key: MessageKey = h === 0 ? "time.min" : m === 0 ? "time.h" : "time.hmin";
+    return t(key, { n: h === 0 ? m : h, h, m });
+  }
 
   return (
     <div className="rise-in flex flex-col gap-4">
-      <section className="rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50 via-surface to-surface p-5 shadow-sm dark:border-emerald-800 dark:from-emerald-950">
+      <section className="rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50 via-surface to-surface p-5 shadow-sm dark:border-emerald-800 dark:from-emerald-950 rtl:bg-gradient-to-bl">
         <span className="mb-2 inline-flex rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white uppercase">
-          Suggested order
+          {t("route.badge")}
         </span>
         <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">{summary}</p>
         {totalMinutes !== undefined && (
-          <p className="mt-3 text-sm font-medium">Total: about {formatMinutes(totalMinutes)}</p>
+          <p className="mt-3 text-sm font-medium">
+            {t("route.total", { time: formatMinutes(totalMinutes) })}
+          </p>
         )}
       </section>
 
@@ -43,7 +50,7 @@ export function RouteCard({ answer }: { answer: RouteAnswer }) {
               <p className="mt-0.5 text-sm leading-relaxed text-muted">{step.why}</p>
               {step.tip && (
                 <p className="mt-1.5 text-sm text-emerald-800 dark:text-emerald-300">
-                  Tip: {step.tip}
+                  {t("route.tip", { tip: step.tip })}
                 </p>
               )}
             </div>
