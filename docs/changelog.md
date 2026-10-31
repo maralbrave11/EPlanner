@@ -13,3 +13,4 @@
 - 2026-10-31 — More choices: Claude now gives 5–8 options per answer (up to 10 for things to see or do) instead of 2–4.
 - 2026-10-31 — "Tell me more" now shows details about only that place (e.g. stores and brands in an outlet) and offers a suggested visiting order; "Yes, plan my route" returns numbered steps. New API fields `mode` and `topic`; no SQL change.
 - 2026-10-31 — Question box is no longer pinned to the bottom of the screen (it covered answers while scrolling); conversations can be deleted from the sidebar (confirmation, trash button). No SQL change.
+- 2026-10-31 — Conversation sidebar is now sticky on desktop and scrolls independently of the page.
