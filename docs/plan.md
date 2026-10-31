@@ -16,7 +16,7 @@
 1. The user types a travel question (e.g., "Where should I stay in Tokyo for 3 nights on a mid budget?", "How do I get from the airport to the city?", "What can I do in Ulaanbaatar in winter?").
 2. The AI answers with:
    - **One recommendation**: the best choice for this user, with a short reason why.
-   - **2–4 options**: alternatives, each with a short description, an **estimated price range**, and pros/cons.
+   - **5–8 options** (up to 10 for things to see or do): alternatives, each with a short description, an **estimated price range**, and pros/cons.
    - Optionally, **one follow-up question** to make the next answer better (e.g., "Do you prefer being close to the center or saving money?").
 3. The user can click an option (or answer the follow-up) to continue the conversation; the AI refines its recommendation.
 4. Signed-in users' conversations are saved so they can come back to them.
@@ -113,7 +113,7 @@ Rules:
 
 - One Next.js Route Handler (Vercel serverless function), e.g. `app/api/trip-assistant/route.ts`, receives the question + recent conversation history, calls **Claude** (Anthropic API), and returns the answer in the Section 5 format.
 - `ANTHROPIC_API_KEY` lives in `.env.local` (local) and Vercel Environment Variables (production). Never exposed to the browser.
-- The system prompt tells Claude to: always give one recommendation + 2–4 options, show prices only as estimated ranges, say when it is unsure, and ask a follow-up question when key info (dates, budget, travelers) is missing.
+- The system prompt tells Claude to: always give one recommendation + 5–8 options (up to 10 for things to see or do), show prices only as estimated ranges, say when it is unsure, and ask a follow-up question when key info (dates, budget, travelers) is missing.
 - Structured output (JSON) so the frontend can render cards reliably.
 - The route saves the question and answer to Supabase.
 - Exact Claude model is chosen in Stage 3 (check current models and pricing then).

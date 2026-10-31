@@ -1,7 +1,7 @@
 # trip-assistant
 
 ## 1. Purpose
-Users ask any travel question and get one clear **recommendation** plus **2–4 options** with estimated price ranges and pros/cons, so they can decide quickly and save money and time. An optional follow-up question helps the next answer fit better.
+Users ask any travel question and get one clear **recommendation** plus **5–8 options** (up to 10 for things to see or do) with estimated price ranges and pros/cons, so they can decide quickly and save money and time. An optional follow-up question helps the next answer fit better.
 
 ## 2. Pages & routes
 | Route | File | What it shows |
@@ -56,7 +56,7 @@ Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains
 - **Claude call:** `lib/trip-assistant/claude.ts` (server-only).
   - Model `claude-sonnet-5-5`, effort `medium`, structured output via zod schema (matches `types.ts`).
   - `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`): if a safety classifier declines, Anthropic retries on its recommended fallback model.
-  - System prompt: one recommendation + 2–4 options, prices only as ranges (USD by default), null price when not relevant, follow-up question when key info is missing, today's date for seasons.
+  - System prompt: one recommendation + 5–8 options (up to 10 for things to see or do), prices only as ranges (USD by default), null price when not relevant, follow-up question when key info is missing, today's date for seasons.
 - **Reads in the browser:** the conversation list and messages come straight from Supabase with the anon key (RLS limits rows to the user).
 - **Env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY` (server only).
 

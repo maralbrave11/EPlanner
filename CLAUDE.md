@@ -5,7 +5,7 @@ Rules the AI assistant must follow in every session. Read `docs/plan.md` for the
 ## Project
 - SmartTrip: a travel website where users ask questions and get AI recommendations with options, saving them money and time.
 - Stack: Next.js (frontend + API routes), Supabase (auth + database), Vercel (hosting), Claude (AI answers, Stage 3 only).
-- App: user asks a travel question → AI answers with one recommendation + 2–4 options (see `docs/plan.md` §5 for the answer format).
+- App: user asks a travel question → AI answers with one recommendation + 5–8 options (see `docs/plan.md` §5 for the answer format).
 - Main spec: `docs/plan.md`. Feature specs: `docs/features/<feature-name>.md`. Stage checklists: `docs/stages/`.
 
 ## Stack Rule (strict)

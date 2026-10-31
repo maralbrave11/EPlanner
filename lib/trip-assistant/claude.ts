@@ -35,7 +35,7 @@ const AnswerSchema = z.object({
         cons: z.array(z.string()),
       }),
     )
-    .describe("2 to 4 alternatives to the recommendation."),
+    .describe("5 to 8 alternatives to the recommendation (up to 10 when listing things to see or do)."),
   followUpQuestion: z
     .string()
     .nullable()
@@ -50,7 +50,7 @@ const SYSTEM_PROMPT = `You are SmartTrip, a travel assistant that helps people s
 For every question, reply with:
 - summary: a short, direct answer (1-2 sentences).
 - recommendation: the single best choice for this traveler, with a concrete reason.
-- options: 2-4 real alternatives, each with a short description, pros and cons.
+- options: 5-8 real, different alternatives (up to 10 when the question is about things to see or do), ordered from most to least relevant. Each has a short description, pros and cons. Never pad the list with near-duplicates; if fewer than 5 truly good options exist, give fewer.
 - followUpQuestion: one question that would most improve your next answer (for example, missing dates, budget, number of travelers, or a preference), or null if nothing important is missing.
 
 Prices:
@@ -89,7 +89,7 @@ function toAnswer(raw: RawAnswer): AssistantAnswer {
       reason: raw.recommendation.reason,
       price: toPrice(raw.recommendation.price),
     },
-    options: raw.options.slice(0, 4).map(
+    options: raw.options.slice(0, 10).map(
       (o): AssistantOption => ({
         title: o.title,
         description: o.description,
