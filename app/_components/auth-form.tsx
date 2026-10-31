@@ -31,7 +31,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(
+        error.code === "over_email_send_rate_limit"
+          ? "Too many emails were sent recently. If you already signed up, try logging in. Otherwise wait about an hour and try again."
+          : error.message,
+      );
       return;
     }
 
