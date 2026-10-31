@@ -7,7 +7,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import type { AssistantAnswer, AssistantOption, PriceRange } from "@/features/trip-assistant/types";
 
-const MODEL = "claude-opus-5-5";
+const MODEL = "claude-sonnet-5-5";
 
 // Structured output schema. Optional fields are `nullable` here and converted
 // to `undefined` below so the frontend types stay unchanged.

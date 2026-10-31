@@ -8,4 +8,4 @@
 - 2026-10-31 — Fix (base): pages no longer crash when Supabase env vars are missing.
 - 2026-10-31 — `trip-assistant` Stage 1 frontend done (mock answers): chat page, recommendation/option cards, follow-up, loading/error/not-found states, conversation sidebar. Branch `feature/trip-assistant`.
 - 2026-10-31 — Stage 2: merged `feature/trip-assistant` into `main`; review fixes: site header with log in / log out, login returns to `?next=` page; added `sql/trip-assistant.sql`.
-- 2026-10-31 — Stage 3: `POST /api/trip-assistant` (Claude claude-opus-5-5, structured output, saves to Supabase); frontend reads conversations from Supabase; login required for `/trip-assistant`; mock data removed. Decisions: login required, USD default. Fix: moved real keys out of `.env.example` into `.env.local`.
+- 2026-10-31 — Stage 3: `POST /api/trip-assistant` (Claude claude-opus-5-5 → switched to claude-sonnet-5-5 for lower cost, structured output, saves to Supabase); frontend reads conversations from Supabase; login required for `/trip-assistant`; mock data removed. Decisions: login required, USD default. Fix: moved real keys out of `.env.example` into `.env.local`.

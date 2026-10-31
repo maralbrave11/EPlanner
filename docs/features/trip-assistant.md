@@ -54,7 +54,7 @@ Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains
   - 400 bad input · 401 not logged in · 422 Claude declined · 429 busy · 500 config/database · 502 Claude error.
   - Flow: check user → load last 20 messages (RLS) → ask Claude → save conversation (if new), question, answer. Saving happens only after a successful answer, so "Try again" never duplicates messages.
 - **Claude call:** `lib/trip-assistant/claude.ts` (server-only).
-  - Model `claude-opus-5-5`, effort `medium`, structured output via zod schema (matches `types.ts`).
+  - Model `claude-sonnet-5-5`, effort `medium`, structured output via zod schema (matches `types.ts`).
   - `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`): if a safety classifier declines, Anthropic retries on its recommended fallback model.
   - System prompt: one recommendation + 2–4 options, prices only as ranges (USD by default), null price when not relevant, follow-up question when key info is missing, today's date for seasons.
 - **Reads in the browser:** the conversation list and messages come straight from Supabase with the anon key (RLS limits rows to the user).
