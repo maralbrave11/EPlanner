@@ -24,7 +24,7 @@ Rules the AI assistant must follow in every session. Read `docs/plan.md` for the
 - Never work directly on `main` for feature work. One branch per feature: `feature/<feature-name>`.
 - Daily routine: update `docs/plan.md` → create a branch → check this file → start working. Log each change as one line in `docs/changelog.md`.
 
-## Current Stage: 1 — Frontend only
+## Stage 1 — Frontend only (done for trip-assistant)
 1. **Frontend only.** Do not touch server code, Supabase code, or SQL.
 2. All frontend files for a feature live under `features/<feature-name>/`. Route files in `app/` only import from that directory.
 3. **One feature at a time.** Don't touch anything outside the feature currently being built.

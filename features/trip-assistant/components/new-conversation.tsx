@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { EXAMPLE_QUESTIONS } from "../mock-data";
+import { EXAMPLE_QUESTIONS } from "../example-questions";
 import { useTripAssistant } from "../trip-assistant-provider";
 import { QuestionInput } from "./question-input";
 import { TripAssistantShell } from "./trip-assistant-shell";
