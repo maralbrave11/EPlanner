@@ -90,6 +90,45 @@ Every AI reply follows this structure (the frontend renders it; in Stage 1 it is
 
 `price` and `followUpQuestion` are optional (not every question involves a price).
 
+
+### 5.1 "Tell me more" about one place (`kind: "detail"`)
+
+When the user taps **Tell me more** on an option, the AI answers **only about that place**: what is inside it (for example, the stores and brands in an outlet mall), practical facts, and an offer to plan a visiting order.
+
+```json
+{
+  "kind": "detail",
+  "title": "Gotemba Premium Outlets",
+  "summary": "One of Japan's largest outlet malls...",
+  "sections": [
+    { "heading": "Sportswear", "items": [{ "name": "Nike Factory Store", "note": "Shoes and apparel" }] }
+  ],
+  "facts": [{ "label": "Best time", "value": "Weekday mornings" }],
+  "price": { "min": 30, "max": 150, "currency": "USD", "unit": "typical spend per person" },
+  "caveat": "Store lineups and hours change. Check the official website before going.",
+  "routeQuestion": "Would you like a suggested order to visit these stores?"
+}
+```
+
+The AI lists only names it is confident exist, and always adds a `caveat` that details can change.
+
+### 5.2 Suggested visiting order (`kind: "route"`)
+
+If the user answers **Yes, plan my route**, the AI orders the stops it listed in the detail answer. **No thanks** just hides the offer.
+
+```json
+{
+  "kind": "route",
+  "title": "Best order for Gotemba Premium Outlets",
+  "summary": "Start with the busiest brands while crowds are small...",
+  "steps": [{ "name": "Nike Factory Store", "why": "Gets crowded early.", "minutes": 40, "tip": "Check the clearance wall first." }],
+  "totalMinutes": 140,
+  "tips": ["Arrive at opening time."]
+}
+```
+
+Older saved answers have no `kind`; they are treated as the normal options answer. Both new kinds are stored in the same `assistant_messages.answer` column, so **no SQL change** is needed.
+
 ---
 
 ## 6. Database (Supabase / PostgreSQL) — designed in Stage 2

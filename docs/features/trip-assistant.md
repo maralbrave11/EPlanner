@@ -23,7 +23,7 @@ Users ask any travel question and get one clear **recommendation** plus **5–8 
 - **Error:** red alert with the message and a **Try again** button (retries the same question).
 - **Success:** summary → recommendation card (highlighted) → option cards (price, pros/cons, "Tell me more") → follow-up question with **Answer** button → "Prices are estimates and may differ."
 - **Not found:** unknown conversation id shows "Conversation not found" with a link to ask a new question.
-- Only the latest answer has interactive buttons; older answers are read-only.
+- Option cards stay clickable on the latest options answer (so users can explore other places); route offer buttons only on the latest answer.
 
 - **Login required:** logged-out visitors to `/trip-assistant*` are redirected to `/login?next=…` and come back after logging in.
 
@@ -35,7 +35,8 @@ Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains
 - [x] Clicking an example or typing a question creates a conversation and opens `/trip-assistant/<id>`
 - [x] Loading state appears, then the answer with recommendation + options + follow-up
 - [x] Prices always shown as estimated ranges, never a single number
-- [x] "Tell me more" sends a follow-up question; "Answer" focuses the input for the follow-up
+- [x] "Tell me more" shows details about that place only (e.g. stores and brands in an outlet), then offers a visiting order; "Yes, plan my route" shows numbered steps, "No thanks" hides the offer
+- [x] "Answer" focuses the input for the follow-up question
 - [x] Error state with working "Try again"
 - [x] Sidebar lists conversations, highlights the active one, and navigation keeps state
 - [x] Not-found state for unknown ids
@@ -53,7 +54,7 @@ Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains
   - Body: `{ conversationId: uuid, question: string (1–2000 chars) }` → `{ answer, saved }` or `{ error }`.
   - 400 bad input · 401 not logged in · 422 Claude declined · 429 busy · 500 config/database · 502 Claude error.
   - Flow: check user → load last 20 messages (RLS) → ask Claude → save conversation (if new), question, answer. Saving happens only after a successful answer, so "Try again" never duplicates messages.
-- **Claude call:** `lib/trip-assistant/claude.ts` (server-only).
+- **Claude call:** `lib/trip-assistant/claude.ts` (server-only). Three modes via the `mode` body field: `ask` (options), `detail` (about one `topic`), `route` (visiting order for `topic`); each has its own prompt and zod schema.
   - Model `claude-sonnet-5-5`, effort `medium`, structured output via zod schema (matches `types.ts`).
   - `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`): if a safety classifier declines, Anthropic retries on its recommended fallback model.
   - System prompt: one recommendation + 5–8 options (up to 10 for things to see or do), prices only as ranges (USD by default), null price when not relevant, follow-up question when key info is missing, today's date for seasons.

@@ -1,7 +1,7 @@
 import { formatPriceRange } from "../format-price";
-import type { AssistantAnswer, PriceRange } from "../types";
+import type { OptionsAnswer, PriceRange } from "../types";
 
-function PriceTag({ price }: { price: PriceRange }) {
+export function PriceTag({ price }: { price: PriceRange }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
       {formatPriceRange(price)}
@@ -26,7 +26,7 @@ function Chip({ children, tone }: { children: React.ReactNode; tone: "pro" | "co
 }
 
 type AnswerCardProps = {
-  answer: AssistantAnswer;
+  answer: OptionsAnswer;
   /** Called when the user wants to explore an option. Omit to hide the buttons. */
   onPickOption?: (title: string) => void;
   /** Called when the user wants to reply to the follow-up question. */

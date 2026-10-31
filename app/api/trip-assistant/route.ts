@@ -1,5 +1,8 @@
 // POST /api/trip-assistant
-// Body: { conversationId: uuid, question: string }
+// Body: { conversationId: uuid, question: string, mode?: "ask" | "detail" | "route", topic?: string }
+//   ask    (default): normal question → recommendation + options
+//   detail: "Tell me more" about `topic` → what is inside that place + route offer
+//   route:  "Yes, plan my route" for `topic` → suggested visiting order
 // Asks Claude, then saves the question + answer to Supabase (RLS: own rows only).
 // Runs as a Vercel serverless function.
 import Anthropic from "@anthropic-ai/sdk";
@@ -18,10 +21,14 @@ export const maxDuration = 60;
 
 const MAX_HISTORY_MESSAGES = 20;
 
-const BodySchema = z.object({
-  conversationId: z.uuid(),
-  question: z.string().trim().min(1).max(2000),
-});
+const BodySchema = z
+  .object({
+    conversationId: z.uuid(),
+    question: z.string().trim().min(1).max(2000),
+    mode: z.enum(["ask", "detail", "route"]).default("ask"),
+    topic: z.string().trim().min(1).max(200).optional(),
+  })
+  .refine((b) => b.mode === "ask" || b.topic, { message: "topic is required" });
 
 function errorResponse(status: number, error: string) {
   return NextResponse.json({ error }, { status });
@@ -34,7 +41,7 @@ function titleFrom(question: string) {
 export async function POST(request: Request) {
   const parsed = BodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return errorResponse(400, "Please enter a question (up to 2000 characters).");
-  const { conversationId, question } = parsed.data;
+  const { conversationId, question, mode, topic } = parsed.data;
 
   const supabase = await createClient();
   const {
@@ -52,6 +59,9 @@ export async function POST(request: Request) {
     console.error("trip-assistant: conversation lookup failed", lookupError);
     return errorResponse(500, "Could not load your conversation. Please try again.");
   }
+
+  // "Tell me more" and "plan my route" only make sense inside an existing conversation.
+  if (mode !== "ask" && !existing) return errorResponse(404, "Conversation not found.");
 
   let history: HistoryTurn[] = [];
   if (existing) {
@@ -77,7 +87,10 @@ export async function POST(request: Request) {
   // Ask Claude first; only save once there is an answer, so "Try again" never duplicates.
   let answer: AssistantAnswer;
   try {
-    answer = await askTripAssistant(history, question);
+    answer = await askTripAssistant(
+      history,
+      mode === "ask" ? { mode, question } : { mode, topic: topic! },
+    );
   } catch (err) {
     if (err instanceof TripAssistantRefusal) {
       return errorResponse(422, "Sorry, I can't help with that question. Try asking it differently.");

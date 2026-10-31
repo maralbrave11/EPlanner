@@ -11,3 +11,4 @@
 - 2026-10-31 — Stage 3: `POST /api/trip-assistant` (Claude claude-opus-5-5 → switched to claude-sonnet-5-5 for lower cost, structured output, saves to Supabase); frontend reads conversations from Supabase; login required for `/trip-assistant`; mock data removed. Decisions: login required, USD default. Fix: moved real keys out of `.env.example` into `.env.local`.
 - 2026-10-31 — Design refresh: new palette and Geist font, hero landing page with how-it-works, sticky header with logo, card-style login, polished answer cards (best-pick badge, price chips), loading skeletons, dark mode tuned. No logic changes.
 - 2026-10-31 — More choices: Claude now gives 5–8 options per answer (up to 10 for things to see or do) instead of 2–4.
+- 2026-10-31 — "Tell me more" now shows details about only that place (e.g. stores and brands in an outlet) and offers a suggested visiting order; "Yes, plan my route" returns numbered steps. New API fields `mode` and `topic`; no SQL change.

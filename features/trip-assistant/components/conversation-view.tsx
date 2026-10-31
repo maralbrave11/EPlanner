@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTripAssistant } from "../trip-assistant-provider";
 import { AnswerCard } from "./answer-card";
+import { PlaceDetailCard } from "./place-detail-card";
 import { QuestionInput } from "./question-input";
+import { RouteCard } from "./route-card";
 import { TripAssistantShell } from "./trip-assistant-shell";
 
 /** /trip-assistant/[conversationId] — messages, loading, error, and follow-ups. */
@@ -18,6 +20,8 @@ export function ConversationView({ conversationId }: { conversationId: string })
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [followUpPrompt, setFollowUpPrompt] = useState<string | null>(null);
+  // Detail answers whose route offer the user turned down (hides the offer).
+  const [declinedRoutes, setDeclinedRoutes] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     loadMessages(conversationId);
@@ -71,6 +75,10 @@ export function ConversationView({ conversationId }: { conversationId: string })
 
   const messages = conversation.messages;
   const lastAssistantIndex = messages.findLastIndex((m) => m.role === "assistant");
+  // Option cards stay clickable after "Tell me more", so the user can explore other places.
+  const lastOptionsIndex = messages.findLastIndex(
+    (m) => m.role === "assistant" && (m.answer.kind === undefined || m.answer.kind === "options"),
+  );
 
   return (
     <TripAssistantShell activeId={conversationId}>
@@ -82,19 +90,44 @@ export function ConversationView({ conversationId }: { conversationId: string })
                 {message.content}
               </p>
             </div>
+          ) : message.answer.kind === "detail" ? (
+            <PlaceDetailCard
+              key={message.id}
+              answer={message.answer}
+              disabled={pending}
+              // The route offer is only for the latest answer, until declined.
+              onWantRoute={
+                index === lastAssistantIndex && !declinedRoutes.has(message.id)
+                  ? () => {
+                      const place = message.answer.kind === "detail" ? message.answer.title : "";
+                      sendMessage(conversationId, `Yes, plan my route for "${place}".`, "route", place);
+                    }
+                  : undefined
+              }
+              onDeclineRoute={
+                index === lastAssistantIndex && !declinedRoutes.has(message.id)
+                  ? () => setDeclinedRoutes((prev) => new Set(prev).add(message.id))
+                  : undefined
+              }
+            />
+          ) : message.answer.kind === "route" ? (
+            <RouteCard key={message.id} answer={message.answer} />
           ) : (
             <AnswerCard
               key={message.id}
               answer={message.answer}
               disabled={pending}
-              // Only the latest answer is interactive.
+              // Only the latest options answer is interactive.
               onPickOption={
-                index === lastAssistantIndex
-                  ? (title) => ask(`Tell me more about "${title}".`)
+                index === lastOptionsIndex
+                  ? (title) => {
+                      setFollowUpPrompt(null);
+                      sendMessage(conversationId, `Tell me more about "${title}".`, "detail", title);
+                    }
                   : undefined
               }
               onAnswerFollowUp={
-                index === lastAssistantIndex
+                index === lastOptionsIndex
                   ? (q) => {
                       setFollowUpPrompt(q);
                       inputRef.current?.focus();

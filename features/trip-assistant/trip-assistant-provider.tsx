@@ -8,9 +8,19 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { AssistantAnswer, AssistantConversation, AssistantMessage } from "./types";
+import type {
+  AssistantAnswer,
+  AssistantConversation,
+  AssistantMessage,
+  AssistantMode,
+} from "./types";
 
-type FailedRequest = { message: string; question: string };
+type FailedRequest = {
+  message: string;
+  question: string;
+  mode?: AssistantMode;
+  topic?: string;
+};
 type ListStatus = "loading" | "ready" | "error";
 
 type TripAssistantContextValue = {
@@ -22,7 +32,8 @@ type TripAssistantContextValue = {
   loadMessages: (conversationId: string) => void;
   /** Creates a conversation with the first question and returns its id. */
   startConversation: (question: string) => string;
-  sendMessage: (conversationId: string, question: string) => void;
+  /** `mode`/`topic`: "detail" or "route" about one place (see docs/plan.md §5). */
+  sendMessage: (conversationId: string, question: string, mode?: AssistantMode, topic?: string) => void;
   retry: (conversationId: string) => void;
 };
 
@@ -37,13 +48,18 @@ function titleFrom(question: string) {
   return trimmed.length > 60 ? `${trimmed.slice(0, 57)}…` : trimmed;
 }
 
-async function askServer(conversationId: string, question: string): Promise<AssistantAnswer> {
+async function askServer(
+  conversationId: string,
+  question: string,
+  mode: AssistantMode,
+  topic?: string,
+): Promise<AssistantAnswer> {
   let res: Response;
   try {
     res = await fetch("/api/trip-assistant", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId, question }),
+      body: JSON.stringify({ conversationId, question, mode, topic }),
     });
   } catch {
     throw new Error("Network error. Check your connection and try again.");
@@ -140,15 +156,20 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const requestAnswer = useCallback(
-    async (conversationId: string, question: string) => {
+    async (
+      conversationId: string,
+      question: string,
+      mode: AssistantMode = "ask",
+      topic?: string,
+    ) => {
       setPending((p) => ({ ...p, [conversationId]: true }));
       setErrors((e) => ({ ...e, [conversationId]: undefined }));
       try {
-        const answer = await askServer(conversationId, question);
+        const answer = await askServer(conversationId, question, mode, topic);
         appendMessage(conversationId, { id: newId(), role: "assistant", answer });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Something went wrong.";
-        setErrors((e) => ({ ...e, [conversationId]: { message, question } }));
+        setErrors((e) => ({ ...e, [conversationId]: { message, question, mode, topic } }));
       } finally {
         setPending((p) => ({ ...p, [conversationId]: false }));
       }
@@ -172,9 +193,9 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
   );
 
   const sendMessage = useCallback(
-    (conversationId: string, question: string) => {
+    (conversationId: string, question: string, mode: AssistantMode = "ask", topic?: string) => {
       appendMessage(conversationId, { id: newId(), role: "user", content: question });
-      void requestAnswer(conversationId, question);
+      void requestAnswer(conversationId, question, mode, topic);
     },
     [appendMessage, requestAnswer],
   );
@@ -182,7 +203,9 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
   const retry = useCallback(
     (conversationId: string) => {
       const failed = errors[conversationId];
-      if (failed?.question) void requestAnswer(conversationId, failed.question);
+      if (failed?.question) {
+        void requestAnswer(conversationId, failed.question, failed.mode, failed.topic);
+      }
     },
     [errors, requestAnswer],
   );
