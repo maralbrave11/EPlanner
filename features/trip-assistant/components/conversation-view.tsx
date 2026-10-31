@@ -9,7 +9,8 @@ import { TripAssistantShell } from "./trip-assistant-shell";
 
 /** /trip-assistant/[conversationId] — messages, loading, error, and follow-ups. */
 export function ConversationView({ conversationId }: { conversationId: string }) {
-  const { conversations, isPending, getError, sendMessage, retry } = useTripAssistant();
+  const { conversations, listStatus, isPending, getError, loadMessages, sendMessage, retry } =
+    useTripAssistant();
   const conversation = conversations.find((c) => c.id === conversationId);
   const pending = isPending(conversationId);
   const error = getError(conversationId);
@@ -18,12 +19,36 @@ export function ConversationView({ conversationId }: { conversationId: string })
   const bottomRef = useRef<HTMLDivElement>(null);
   const [followUpPrompt, setFollowUpPrompt] = useState<string | null>(null);
 
-  const messageCount = conversation?.messages.length ?? 0;
+  useEffect(() => {
+    loadMessages(conversationId);
+  }, [conversationId, loadMessages]);
+
+  const messageCount = conversation?.messages?.length ?? 0;
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messageCount, pending, error]);
 
-  if (!conversation) {
+  if (listStatus === "error" && !conversation) {
+    return (
+      <TripAssistantShell activeId={conversationId}>
+        <p role="alert" className="py-12 text-center text-rose-700 dark:text-rose-300">
+          Could not load your conversations. Please refresh the page.
+        </p>
+      </TripAssistantShell>
+    );
+  }
+
+  if ((listStatus === "loading" && !conversation) || (conversation && !conversation.messages)) {
+    return (
+      <TripAssistantShell activeId={conversationId}>
+        <p role="status" className="py-12 text-center text-sm text-zinc-500">
+          Loading conversation…
+        </p>
+      </TripAssistantShell>
+    );
+  }
+
+  if (!conversation?.messages) {
     return (
       <TripAssistantShell>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
@@ -44,12 +69,13 @@ export function ConversationView({ conversationId }: { conversationId: string })
     sendMessage(conversationId, question);
   }
 
-  const lastAssistantIndex = conversation.messages.findLastIndex((m) => m.role === "assistant");
+  const messages = conversation.messages;
+  const lastAssistantIndex = messages.findLastIndex((m) => m.role === "assistant");
 
   return (
     <TripAssistantShell activeId={conversationId}>
       <div className="flex flex-1 flex-col gap-6 pb-4">
-        {conversation.messages.map((message, index) =>
+        {messages.map((message, index) =>
           message.role === "user" ? (
             <div key={message.id} className="flex justify-end">
               <p className="max-w-[80%] rounded-2xl rounded-br-sm bg-emerald-600 px-4 py-2 text-white">
@@ -92,13 +118,15 @@ export function ConversationView({ conversationId }: { conversationId: string })
             className="flex flex-wrap items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200"
           >
             <span className="flex-1">{error.message}</span>
-            <button
-              type="button"
-              onClick={() => retry(conversationId)}
-              className="rounded-md bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-700"
-            >
-              Try again
-            </button>
+            {error.question && (
+              <button
+                type="button"
+                onClick={() => retry(conversationId)}
+                className="rounded-md bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-700"
+              >
+                Try again
+              </button>
+            )}
           </div>
         )}
 

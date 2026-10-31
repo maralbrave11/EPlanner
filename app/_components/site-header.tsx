@@ -14,13 +14,11 @@ const isSupabaseConfigured = Boolean(
 export function SiteHeader() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [ready, setReady] = useState(false);
+  // Without Supabase config there is no user to wait for.
+  const [ready, setReady] = useState(!isSupabaseConfigured);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setReady(true);
-      return;
-    }
+    if (!isSupabaseConfigured) return;
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);

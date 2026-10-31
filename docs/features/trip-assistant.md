@@ -25,11 +25,10 @@ Users ask any travel question and get one clear **recommendation** plus **2–4 
 - **Not found:** unknown conversation id shows "Conversation not found" with a link to ask a new question.
 - Only the latest answer has interactive buttons; older answers are read-only.
 
+- **Login required:** logged-out visitors to `/trip-assistant*` are redirected to `/login?next=…` and come back after logging in.
+
 ## 4. Mock data
-- Two saved conversations (`mock-tokyo`, `mock-ulaanbaatar`) and four example questions.
-- `pickMockAnswer` picks an answer by keywords: stay/hotel → neighborhoods, airport/train/bus → transport, do/see/winter → activities, otherwise a general answer.
-- Mock delay: 1.2 s. **To preview the error state, include the word "error" in a question.**
-- Nothing is saved: refreshing the page resets to the mock conversations.
+Removed in Stage 3. Only `example-questions.ts` (four starter questions) remains.
 
 ## 5. Acceptance
 - [x] Landing page "Ask a travel question" → `/trip-assistant`
@@ -50,7 +49,16 @@ Users ask any travel question and get one clear **recommendation** plus **2–4 
 - Trigger: inserting a message bumps the conversation `updated_at` (sidebar order).
 
 ## 7. Server notes
-(Stage 3) Replace `askMockAssistant` with a call to the trip-assistant API route (Claude, server-side); load and save conversations from Supabase instead of `MOCK_CONVERSATIONS`.
+- **Endpoint:** `POST /api/trip-assistant` (`app/api/trip-assistant/route.ts`, Vercel serverless, `maxDuration = 60`).
+  - Body: `{ conversationId: uuid, question: string (1–2000 chars) }` → `{ answer, saved }` or `{ error }`.
+  - 400 bad input · 401 not logged in · 422 Claude declined · 429 busy · 500 config/database · 502 Claude error.
+  - Flow: check user → load last 20 messages (RLS) → ask Claude → save conversation (if new), question, answer. Saving happens only after a successful answer, so "Try again" never duplicates messages.
+- **Claude call:** `lib/trip-assistant/claude.ts` (server-only).
+  - Model `claude-opus-5-5`, effort `medium`, structured output via zod schema (matches `types.ts`).
+  - `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`): if a safety classifier declines, Anthropic retries on its recommended fallback model.
+  - System prompt: one recommendation + 2–4 options, prices only as ranges (USD by default), null price when not relevant, follow-up question when key info is missing, today's date for seasons.
+- **Reads in the browser:** the conversation list and messages come straight from Supabase with the anon key (RLS limits rows to the user).
+- **Env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY` (server only).
 
 ## 8. Status
-Stage 1 done. Branch: `feature/trip-assistant`.
+Stage 3 code done (branch `feature/trip-assistant`, merged to `main`). End-to-end test with a real user pending: needs the SQL run in Supabase and `ANTHROPIC_API_KEY` set.

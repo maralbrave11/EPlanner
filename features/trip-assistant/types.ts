@@ -37,5 +37,6 @@ export type AssistantMessage =
 export type AssistantConversation = {
   id: string;
   title: string;
-  messages: AssistantMessage[];
+  /** undefined = not loaded from the database yet */
+  messages?: AssistantMessage[];
 };

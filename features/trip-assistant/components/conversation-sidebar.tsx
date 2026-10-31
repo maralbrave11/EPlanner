@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTripAssistant } from "../trip-assistant-provider";
 
 export function ConversationSidebar({ activeId }: { activeId?: string }) {
-  const { conversations } = useTripAssistant();
+  const { conversations, listStatus } = useTripAssistant();
 
   return (
     <aside className="flex w-full flex-col gap-3 border-b border-zinc-200 p-4 md:w-64 md:shrink-0 md:border-r md:border-b-0 dark:border-zinc-800">
@@ -17,7 +17,11 @@ export function ConversationSidebar({ activeId }: { activeId?: string }) {
       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
         Your conversations
       </p>
-      {conversations.length === 0 ? (
+      {conversations.length === 0 && listStatus === "loading" ? (
+        <p className="text-sm text-zinc-500">Loading…</p>
+      ) : conversations.length === 0 && listStatus === "error" ? (
+        <p className="text-sm text-rose-700 dark:text-rose-300">Could not load conversations.</p>
+      ) : conversations.length === 0 ? (
         <p className="text-sm text-zinc-500">No conversations yet.</p>
       ) : (
         <nav className="flex max-h-48 flex-col gap-1 overflow-y-auto md:max-h-none">
