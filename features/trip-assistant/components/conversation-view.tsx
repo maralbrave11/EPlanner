@@ -173,7 +173,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-0 bg-gradient-to-t from-background from-70% to-transparent pt-6 pb-4">
+      <div className="pt-2 pb-4">
         {followUpPrompt && (
           <p className="mb-2 text-sm text-sky-700 dark:text-sky-300">Answering: {followUpPrompt}</p>
         )}

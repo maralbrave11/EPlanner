@@ -35,6 +35,8 @@ type TripAssistantContextValue = {
   /** `mode`/`topic`: "detail" or "route" about one place (see docs/plan.md §5). */
   sendMessage: (conversationId: string, question: string, mode?: AssistantMode, topic?: string) => void;
   retry: (conversationId: string) => void;
+  /** Deletes a conversation and its messages. Resolves to false if the database refused. */
+  deleteConversation: (conversationId: string) => Promise<boolean>;
 };
 
 const TripAssistantContext = createContext<TripAssistantContextValue | null>(null);
@@ -210,6 +212,22 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
     [errors, requestAnswer],
   );
 
+  const deleteConversation = useCallback(async (conversationId: string) => {
+    // RLS only lets users delete their own rows; messages go with it (ON DELETE CASCADE).
+    // A conversation whose first answer failed was never saved, so 0 rows is fine too.
+    const { error } = await createClient()
+      .from("assistant_conversations")
+      .delete()
+      .eq("id", conversationId);
+    if (error) {
+      console.error("trip-assistant: could not delete conversation", error);
+      return false;
+    }
+    setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+    setErrors((e) => ({ ...e, [conversationId]: undefined }));
+    return true;
+  }, []);
+
   const value = useMemo<TripAssistantContextValue>(
     () => ({
       conversations,
@@ -220,8 +238,19 @@ export function TripAssistantProvider({ children }: { children: React.ReactNode 
       startConversation,
       sendMessage,
       retry,
+      deleteConversation,
     }),
-    [conversations, listStatus, pending, errors, loadMessages, startConversation, sendMessage, retry],
+    [
+      conversations,
+      listStatus,
+      pending,
+      errors,
+      loadMessages,
+      startConversation,
+      sendMessage,
+      retry,
+      deleteConversation,
+    ],
   );
 
   return <TripAssistantContext value={value}>{children}</TripAssistantContext>;

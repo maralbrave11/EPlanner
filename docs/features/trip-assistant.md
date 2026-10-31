@@ -22,6 +22,8 @@ Users ask any travel question and get one clear **recommendation** plus **5–8 
 - **Loading:** "Finding the best options for you…" while waiting; input and option buttons are disabled.
 - **Error:** red alert with the message and a **Try again** button (retries the same question).
 - **Success:** summary → recommendation card (highlighted) → option cards (price, pros/cons, "Tell me more") → follow-up question with **Answer** button → "Prices are estimates and may differ."
+- **Delete:** each conversation in the sidebar has a trash button (always visible on touch screens, on hover or focus on desktop). It asks for confirmation, removes the conversation and its messages from Supabase (RLS: own rows only), and leaves the page if that conversation was open.
+- **Input box:** sits at the end of the conversation (not pinned), so it never covers answers while scrolling.
 - **Not found:** unknown conversation id shows "Conversation not found" with a link to ask a new question.
 - Option cards stay clickable on the latest options answer (so users can explore other places); route offer buttons only on the latest answer.
 
