@@ -41,7 +41,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
   if ((listStatus === "loading" && !conversation) || (conversation && !conversation.messages)) {
     return (
       <TripAssistantShell activeId={conversationId}>
-        <p role="status" className="py-12 text-center text-sm text-zinc-500">
+        <p role="status" className="py-12 text-center text-sm text-muted">
           Loading conversation…
         </p>
       </TripAssistantShell>
@@ -53,7 +53,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
       <TripAssistantShell>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
           <h1 className="text-xl font-semibold">Conversation not found</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-muted">
             It may have been deleted, or the link is wrong.
           </p>
           <Link href="/trip-assistant" className="font-medium text-emerald-700 underline">
@@ -78,7 +78,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
         {messages.map((message, index) =>
           message.role === "user" ? (
             <div key={message.id} className="flex justify-end">
-              <p className="max-w-[80%] rounded-2xl rounded-br-sm bg-emerald-600 px-4 py-2 text-white">
+              <p className="rise-in max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-emerald-600 to-teal-600 px-4 py-2.5 text-white shadow-sm">
                 {message.content}
               </p>
             </div>
@@ -106,9 +106,16 @@ export function ConversationView({ conversationId }: { conversationId: string })
         )}
 
         {pending && (
-          <div role="status" className="flex items-center gap-2 text-sm text-zinc-500">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-            Finding the best options for you…
+          <div role="status" className="flex flex-col gap-3">
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              Finding the best options for you…
+            </p>
+            <div className="skeleton h-24 rounded-2xl" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="skeleton h-28 rounded-2xl" />
+              <div className="skeleton h-28 rounded-2xl" />
+            </div>
           </div>
         )}
 
@@ -133,7 +140,7 @@ export function ConversationView({ conversationId }: { conversationId: string })
         <div ref={bottomRef} />
       </div>
 
-      <div className="sticky bottom-0 bg-background pt-2 pb-4">
+      <div className="sticky bottom-0 bg-gradient-to-t from-background from-70% to-transparent pt-6 pb-4">
         {followUpPrompt && (
           <p className="mb-2 text-sm text-sky-700 dark:text-sky-300">Answering: {followUpPrompt}</p>
         )}

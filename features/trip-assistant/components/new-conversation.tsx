@@ -20,26 +20,36 @@ export function NewConversation() {
     <TripAssistantShell>
       <div className="flex flex-1 flex-col justify-center gap-8 py-8">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Ask a travel question</h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Where to next?
+            <span className="block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+              Ask a travel question.
+            </span>
+          </h1>
+          <p className="mt-3 text-muted">
             Get one clear recommendation plus a few options with estimated prices.
           </p>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2">
-          {EXAMPLE_QUESTIONS.map((q) => (
-            <button
-              key={q}
-              type="button"
-              onClick={() => ask(q)}
-              className="rounded-xl border border-zinc-200 p-3 text-left text-sm hover:border-emerald-500 hover:bg-emerald-50 dark:border-zinc-800 dark:hover:bg-emerald-950"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
         <QuestionInput onSubmit={ask} />
+
+        <div>
+          <h2 className="mb-2.5 text-xs font-semibold tracking-wide text-muted uppercase">
+            Or try one of these
+          </h2>
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {EXAMPLE_QUESTIONS.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => ask(q)}
+                className="rounded-2xl border border-line bg-surface p-3.5 text-left text-sm shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </TripAssistantShell>
   );

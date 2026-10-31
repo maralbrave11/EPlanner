@@ -26,11 +26,12 @@ export function QuestionInput({ onSubmit, disabled, placeholder, ref }: Question
         e.preventDefault();
         submit();
       }}
-      className="flex items-end gap-2 rounded-xl border border-zinc-300 bg-white p-2 focus-within:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900"
+      className="flex items-end gap-2 rounded-2xl border border-line bg-surface p-2 shadow-lg shadow-black/5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15"
     >
       <textarea
         ref={ref}
         rows={2}
+        maxLength={2000}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
@@ -41,14 +42,18 @@ export function QuestionInput({ onSubmit, disabled, placeholder, ref }: Question
         }}
         placeholder={placeholder ?? "Ask a travel question…"}
         aria-label="Your travel question"
-        className="flex-1 resize-none bg-transparent px-2 py-1 outline-none"
+        className="flex-1 resize-none bg-transparent px-2.5 py-1.5 outline-none placeholder:text-muted"
       />
       <button
         type="submit"
         disabled={!canSend}
-        className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
+        aria-label="Send question"
+        className="flex h-10 items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 font-medium text-white shadow-sm transition hover:shadow-md disabled:opacity-40 disabled:shadow-none"
       >
         Ask
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
       </button>
     </form>
   );

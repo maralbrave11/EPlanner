@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafb;
+  --foreground: #0f1b1a;
+  --surface: #ffffff;
+  --muted: #5b6b69;
+  --border: #e3eae9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a1211;
+    --foreground: #e8f0ef;
+    --surface: #111c1b;
+    --muted: #98aaa8;
+    --border: #1f302e;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Soft glow behind hero areas */
+.hero-glow {
+  background-image:
+    radial-gradient(60rem 28rem at 15% -10%, rgb(16 185 129 / 0.16), transparent 60%),
+    radial-gradient(50rem 24rem at 95% 0%, rgb(14 165 233 / 0.12), transparent 60%);
+}
+
+/* Loading skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, transparent 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Answer cards fade up as they appear */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise-in {
+  animation: rise-in 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .rise-in {
+    animation: none;
+  }
 }
