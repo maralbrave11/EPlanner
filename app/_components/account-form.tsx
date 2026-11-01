@@ -42,7 +42,7 @@ export function AccountForm() {
     setLoading(true);
     const { error } = await createClient().auth.updateUser(
       { email },
-      { emailRedirectTo: `${window.location.origin}/account` },
+      { emailRedirectTo: `${window.location.origin}/auth/callback?next=/account` },
     );
     setLoading(false);
     if (error) {

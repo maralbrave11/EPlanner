@@ -27,3 +27,4 @@
 - 2026-11-01 — Account page `/account` (login required): shows the email and changes it (confirmation by email). The email in the header links to it. Text in 10 languages. If the admin changes email, update `ADMIN_EMAILS`.
 - 2026-11-01 — Dev-only prompt log: every Claude call prints the exact system prompt, messages, reply and token use in the `npm run dev` terminal and in `llm-debug.log` (git-ignored). Off in production (`lib/ai/debug-log.ts`).
 - 2026-11-01 — Password reset link always lands on the "choose a new password" page (safety-net redirect on any page); `/account` also has a "Change password" form for logged-in users. 2 new texts in 10 languages.
+- 2026-11-01 — Password reset/email-change links now pass `/auth/callback`, which signs the user in on the server and opens `/reset-password` (or `/account`) directly, instead of relying on the browser to catch the event.
