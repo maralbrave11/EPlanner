@@ -91,6 +91,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
               className={inputClass}
             />
           </label>
+          {isLogin && (
+            <Link href="/forgot-password" className="-mt-2 self-end text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400">
+              {t("auth.forgot")}
+            </Link>
+          )}
           {error && (
             <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
               {error}

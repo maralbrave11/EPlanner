@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   // trip-assistant, trip-planner, events and admin pages need a logged-in user
   // (the admin page also checks ADMIN_EMAILS).
   const { pathname, search } = request.nextUrl;
-  const needsLogin = ["/trip-assistant", "/trip-planner", "/events", "/admin"].some(
+  const needsLogin = ["/trip-assistant", "/trip-planner", "/events", "/admin", "/account"].some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
   if (!user && needsLogin) {

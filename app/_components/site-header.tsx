@@ -67,7 +67,13 @@ export function SiteHeader() {
         <LanguageSwitcher />
         {!ready ? null : user ? (
           <>
-            <span className="hidden max-w-48 truncate text-muted sm:inline">{user.email}</span>
+            <Link
+              href="/account"
+              title={t("account.title")}
+              className="hidden max-w-48 truncate text-muted underline-offset-2 hover:text-foreground hover:underline sm:inline"
+            >
+              {user.email}
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin"
