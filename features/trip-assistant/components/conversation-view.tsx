@@ -12,8 +12,17 @@ import { TripAssistantShell } from "./trip-assistant-shell";
 
 /** /trip-assistant/[conversationId] — messages, loading, error, and follow-ups. */
 export function ConversationView({ conversationId }: { conversationId: string }) {
-  const { conversations, listStatus, isPending, getError, loadMessages, sendMessage, retry } =
-    useTripAssistant();
+  const {
+    conversations,
+    listStatus,
+    isPending,
+    getError,
+    displayAnswer,
+    isTranslating,
+    loadMessages,
+    sendMessage,
+    retry,
+  } = useTripAssistant();
   const { t, tError } = useI18n();
   const conversation = conversations.find((c) => c.id === conversationId);
   const pending = isPending(conversationId);
@@ -85,16 +94,23 @@ export function ConversationView({ conversationId }: { conversationId: string })
   return (
     <TripAssistantShell activeId={conversationId}>
       <div className="flex flex-1 flex-col gap-6 pb-4">
-        {messages.map((message, index) =>
-          message.role === "user" ? (
+        {messages.map((original, index) => {
+          const message =
+            original.role === "assistant"
+              ? { ...original, answer: displayAnswer(original.id, original.answer) }
+              : original;
+          return message.role === "user" ? (
             <div key={message.id} className="flex justify-end">
               <p className="rise-in max-w-[80%] rounded-2xl rounded-be-md bg-gradient-to-br from-emerald-600 to-teal-600 px-4 py-2.5 text-white shadow-sm">
                 {message.content}
               </p>
             </div>
           ) : message.answer.kind === "detail" ? (
+            <div key={message.id} className="flex flex-col gap-2">
+            {isTranslating(message.id) && (
+              <p role="status" className="text-xs text-muted">{t("view.translating")}</p>
+            )}
             <PlaceDetailCard
-              key={message.id}
               answer={message.answer}
               disabled={pending}
               // The route offer is only for the latest answer, until declined.
@@ -112,8 +128,14 @@ export function ConversationView({ conversationId }: { conversationId: string })
                   : undefined
               }
             />
+            </div>
           ) : message.answer.kind === "route" ? (
-            <RouteCard key={message.id} answer={message.answer} />
+            <div key={message.id} className="flex flex-col gap-2">
+              {isTranslating(message.id) && (
+                <p role="status" className="text-xs text-muted">{t("view.translating")}</p>
+              )}
+              <RouteCard answer={message.answer} />
+            </div>
           ) : (
             <AnswerCard
               key={message.id}
@@ -137,8 +159,8 @@ export function ConversationView({ conversationId }: { conversationId: string })
                   : undefined
               }
             />
-          ),
-        )}
+          );
+        })}
 
         {pending && (
           <div role="status" className="flex flex-col gap-3">

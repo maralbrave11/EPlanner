@@ -7,7 +7,7 @@ import type { OptionsAnswer, PriceRange } from "../types";
 export function PriceTag({ price }: { price: PriceRange }) {
   const { t, locale } = useI18n();
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:ring-emerald-900">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-800 ring-1 ring-green-200 dark:bg-green-950 dark:text-green-200 dark:ring-green-900">
       {formatPriceRange(price, locale)}
       <span className="text-[11px] font-medium tracking-wide uppercase opacity-60">
         {t("price.est")}
@@ -20,7 +20,7 @@ function Chip({ children, tone }: { children: React.ReactNode; tone: "pro" | "co
   return (
     <li
       className={`flex items-start gap-1.5 text-sm ${
-        tone === "pro" ? "text-emerald-800 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"
+        tone === "pro" ? "text-green-800 dark:text-green-300" : "text-rose-700 dark:text-rose-300"
       }`}
     >
       <span aria-hidden className="mt-0.5 font-bold">

@@ -97,7 +97,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </p>
           )}
           {message && (
-            <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+            <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
               {message}
             </p>
           )}

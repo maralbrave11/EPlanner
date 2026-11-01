@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FeatureNav } from "@/app/_components/feature-nav";
 import { useI18n } from "@/lib/i18n/i18n-provider";
 import { useTripAssistant } from "../trip-assistant-provider";
 
@@ -26,6 +27,7 @@ export function ConversationSidebar({ activeId }: { activeId?: string }) {
 
   return (
     <aside className="flex w-full flex-col gap-3 border-b border-line bg-surface/60 p-4 md:sticky md:top-[57px] md:h-[calc(100dvh-57px)] md:w-72 md:shrink-0 md:self-start md:border-e md:border-b-0">
+      <FeatureNav />
       <Link
         href="/trip-assistant"
         className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2.5 text-center text-sm font-medium text-white shadow-sm transition hover:shadow-md"
@@ -94,6 +96,7 @@ export function ConversationSidebar({ activeId }: { activeId?: string }) {
           ))}
         </nav>
       )}
+      <p className="border-t border-line pt-3 text-xs leading-relaxed text-muted">{t("side.storedNote")}</p>
     </aside>
   );
 }

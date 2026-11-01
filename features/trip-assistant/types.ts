@@ -46,6 +46,8 @@ export type PlaceDetailAnswer = {
   caveat?: string;
   /** Question offering a suggested visiting order. */
   routeQuestion: string;
+  /** Language the text is written in (missing on older answers = English). */
+  lang?: string;
 };
 
 /** Reply after the user says yes to the route offer. */
@@ -56,6 +58,8 @@ export type RouteAnswer = {
   steps: { name: string; why: string; minutes?: number; tip?: string }[];
   totalMinutes?: number;
   tips: string[];
+  /** Language the text is written in (missing on older answers = English). */
+  lang?: string;
 };
 
 export type AssistantAnswer = OptionsAnswer | PlaceDetailAnswer | RouteAnswer;

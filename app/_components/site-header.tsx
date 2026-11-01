@@ -32,6 +32,7 @@ export function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   // Without Supabase config there is no user to wait for.
   const [ready, setReady] = useState(!isSupabaseConfigured);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -39,9 +40,16 @@ export function SiteHeader() {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setReady(true);
+      if (data.user) {
+        fetch("/api/admin?view=me")
+          .then((r) => r.json())
+          .then((d: { admin?: boolean }) => setIsAdmin(Boolean(d.admin)))
+          .catch(() => {});
+      }
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (!session?.user) setIsAdmin(false);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -60,6 +68,14 @@ export function SiteHeader() {
         {!ready ? null : user ? (
           <>
             <span className="hidden max-w-48 truncate text-muted sm:inline">{user.email}</span>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="rounded-full px-3 py-1.5 font-medium text-orange-700 hover:bg-orange-50 dark:text-orange-300 dark:hover:bg-orange-950"
+              >
+                {t("nav.admin")}
+              </Link>
+            )}
             <Link
               href="/trip-assistant"
               className="rounded-full px-3 py-1.5 font-medium text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950"

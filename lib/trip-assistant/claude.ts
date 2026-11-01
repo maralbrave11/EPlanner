@@ -260,6 +260,75 @@ async function callClaude<T extends z.ZodType>(
   return response.parsed_output as z.infer<T>;
 }
 
+// ---------------------------------------------------------------------------
+// Translation of a saved "Tell me more" / route answer when the user switches language
+// ---------------------------------------------------------------------------
+
+const StoredPrice = z.object({
+  min: z.number(),
+  max: z.number(),
+  currency: z.string().max(10),
+  unit: z.string().max(100).optional(),
+});
+const Text = z.string().max(2000);
+
+/** Shape of a saved detail or route answer (see features/trip-assistant/types.ts). */
+export const TranslatableAnswerSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("detail"),
+    title: Text,
+    summary: Text,
+    sections: z
+      .array(
+        z.object({
+          heading: Text,
+          items: z.array(z.object({ name: Text, note: Text.optional() })).max(40),
+        }),
+      )
+      .max(20),
+    facts: z.array(z.object({ label: Text, value: Text })).max(20),
+    price: StoredPrice.optional(),
+    caveat: Text.optional(),
+    routeQuestion: Text,
+  }),
+  z.object({
+    kind: z.literal("route"),
+    title: Text,
+    summary: Text,
+    steps: z
+      .array(
+        z.object({
+          name: Text,
+          why: Text,
+          minutes: z.number().optional(),
+          tip: Text.optional(),
+        }),
+      )
+      .max(30),
+    totalMinutes: z.number().optional(),
+    tips: z.array(Text).max(20),
+  }),
+]);
+export type TranslatableAnswer = z.infer<typeof TranslatableAnswerSchema>;
+
+const TRANSLATE_PROMPT = `You are SmartTrip's translator. The user message is a JSON answer you wrote earlier. Translate every text field into the target language and return the same structure.
+- Keep every number, price, currency and the number and order of all items exactly the same.
+- Do not add, remove or reorder anything, and do not add new facts.
+- Keep brand names in their original Latin spelling; translate headings, notes, tips and sentences.`;
+
+export async function translateAnswer(
+  answer: TranslatableAnswer,
+  language: LanguageCode,
+): Promise<PlaceDetailAnswer | RouteAnswer> {
+  const input = JSON.stringify(answer);
+  if (answer.kind === "detail") {
+    const raw = await callClaude(DetailSchema, TRANSLATE_PROMPT, [], input, language);
+    return toDetailAnswer(raw);
+  }
+  const raw = await callClaude(RouteSchema, TRANSLATE_PROMPT, [], input, language);
+  return toRouteAnswer(raw);
+}
+
 export async function askTripAssistant(
   history: HistoryTurn[],
   request: TripAssistantRequest,

@@ -36,9 +36,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // trip-assistant pages need a logged-in user (answers are saved per user).
+  // trip-assistant, trip-planner, events and admin pages need a logged-in user
+  // (the admin page also checks ADMIN_EMAILS).
   const { pathname, search } = request.nextUrl;
-  if (!user && pathname.startsWith("/trip-assistant")) {
+  const needsLogin = ["/trip-assistant", "/trip-planner", "/events", "/admin"].some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  if (!user && needsLogin) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = `?next=${encodeURIComponent(pathname + search)}`;

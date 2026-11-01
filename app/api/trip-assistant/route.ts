@@ -9,6 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { AssistantAnswer } from "@/features/trip-assistant/types";
+import { checkAccess, logActivity } from "@/lib/admin/guard";
 import { LANGUAGE_CODES } from "@/lib/i18n/languages";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -53,6 +54,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return errorResponse(401, "login", "Please log in to ask questions.");
 
+  const denied = await checkAccess(supabase, user.id, "trip-assistant");
+  if (denied) return denied;
+
   // Existing conversation? RLS returns nothing if it belongs to someone else.
   const { data: existing, error: lookupError } = await supabase
     .from("assistant_conversations")
@@ -95,6 +99,8 @@ export async function POST(request: Request) {
       history,
       mode === "ask" ? { mode, question, language } : { mode, topic: topic!, language },
     );
+    // Remember the language so it can be translated when the user switches language.
+    if (answer.kind === "detail" || answer.kind === "route") answer = { ...answer, lang: language };
   } catch (err) {
     if (err instanceof TripAssistantRefusal) {
       return errorResponse(422, "refused", "Sorry, I can't help with that question. Try asking it differently.");
@@ -113,6 +119,11 @@ export async function POST(request: Request) {
     console.error("trip-assistant: unexpected error", err);
     return errorResponse(502, "claude", "The assistant could not answer right now. Please try again.");
   }
+
+  await logActivity(supabase, user.id, "assistant", mode === "ask" ? question : `${mode}: ${topic}`, {
+    conversationId,
+    mode,
+  });
 
   if (!existing) {
     const { error } = await supabase

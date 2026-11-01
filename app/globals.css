@@ -1,11 +1,54 @@
 @import "tailwindcss";
 
+/* Travel palette: ocean blue, turquoise and sunset orange.
+   The components use the names emerald / teal / sky, so those names are remapped here
+   (emerald → ocean blue = main color, teal → turquoise = gradient partner,
+   sky → sunset orange = offers, questions and highlights).
+   Real green stays green for prices and "pros"; rose stays for errors. */
+@theme {
+  --color-emerald-50: var(--color-blue-50);
+  --color-emerald-100: var(--color-blue-100);
+  --color-emerald-200: var(--color-blue-200);
+  --color-emerald-300: var(--color-blue-300);
+  --color-emerald-400: var(--color-blue-400);
+  --color-emerald-500: var(--color-blue-500);
+  --color-emerald-600: var(--color-blue-600);
+  --color-emerald-700: var(--color-blue-700);
+  --color-emerald-800: var(--color-blue-800);
+  --color-emerald-900: var(--color-blue-900);
+  --color-emerald-950: var(--color-blue-950);
+
+  --color-teal-50: var(--color-cyan-50);
+  --color-teal-100: var(--color-cyan-100);
+  --color-teal-200: var(--color-cyan-200);
+  --color-teal-300: var(--color-cyan-300);
+  --color-teal-400: var(--color-cyan-400);
+  --color-teal-500: var(--color-cyan-500);
+  --color-teal-600: var(--color-cyan-600);
+  --color-teal-700: var(--color-cyan-700);
+  --color-teal-800: var(--color-cyan-800);
+  --color-teal-900: var(--color-cyan-900);
+  --color-teal-950: var(--color-cyan-950);
+
+  --color-sky-50: var(--color-orange-50);
+  --color-sky-100: var(--color-orange-100);
+  --color-sky-200: var(--color-orange-200);
+  --color-sky-300: var(--color-orange-300);
+  --color-sky-400: var(--color-orange-400);
+  --color-sky-500: var(--color-orange-500);
+  --color-sky-600: var(--color-orange-600);
+  --color-sky-700: var(--color-orange-700);
+  --color-sky-800: var(--color-orange-800);
+  --color-sky-900: var(--color-orange-900);
+  --color-sky-950: var(--color-orange-950);
+}
+
 :root {
-  --background: #f8fafb;
-  --foreground: #0f1b1a;
+  --background: #f3f9ff;
+  --foreground: #0d1b2e;
   --surface: #ffffff;
-  --muted: #5b6b69;
-  --border: #e3eae9;
+  --muted: #526580;
+  --border: #d9e6f5;
 }
 
 @theme inline {
@@ -20,11 +63,11 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a1211;
-    --foreground: #e8f0ef;
-    --surface: #111c1b;
-    --muted: #98aaa8;
-    --border: #1f302e;
+    --background: #08101f;
+    --foreground: #e8eff9;
+    --surface: #0f1a2e;
+    --muted: #9bacc6;
+    --border: #1d2c47;
   }
 }
 
@@ -34,11 +77,61 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Soft glow behind hero areas */
+/* Soft sky + sunrise glow behind hero areas */
 .hero-glow {
   background-image:
-    radial-gradient(60rem 28rem at 15% -10%, rgb(16 185 129 / 0.16), transparent 60%),
-    radial-gradient(50rem 24rem at 95% 0%, rgb(14 165 233 / 0.12), transparent 60%);
+    radial-gradient(55rem 26rem at 10% -10%, rgb(59 130 246 / 0.22), transparent 60%),
+    radial-gradient(45rem 22rem at 100% 0%, rgb(251 146 60 / 0.2), transparent 60%),
+    radial-gradient(40rem 20rem at 55% 100%, rgb(6 182 212 / 0.14), transparent 60%);
+}
+
+/* Floating clouds and plane in the hero illustration */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(18px);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -7px;
+  }
+}
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.drift {
+  animation: drift 9s ease-in-out infinite;
+}
+.drift-slow {
+  animation: drift 14s ease-in-out infinite reverse;
+}
+.float {
+  animation: float 5s ease-in-out infinite;
+}
+.dash-flow {
+  animation: dash-flow 2s linear infinite;
+}
+
+/* Cards that lift on hover */
+.lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -12px rgb(30 80 160 / 0.35);
 }
 
 /* Loading skeleton shimmer */
@@ -73,7 +166,14 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton,
-  .rise-in {
+  .rise-in,
+  .drift,
+  .drift-slow,
+  .float,
+  .dash-flow {
     animation: none;
+  }
+  .lift:hover {
+    transform: none;
   }
 }

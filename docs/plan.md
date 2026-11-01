@@ -37,6 +37,11 @@ Each feature name is also its directory name (see Naming Rule in `CLAUDE.md`).
 |---|---|---|
 | 1 | `trip-assistant` | Chat page: user asks a question; AI replies with a recommendation card, option cards, and an optional follow-up question. Includes the list of the user's past conversations. |
 
+| 2 | `trip-planner` | Step-by-step planner: where and when → interests → suggested places, events and sales during the trip → optional day-by-day plan. Nothing is saved. |
+| 3 | `events` | Ask where and when; get a list of events, festivals and sales (what, where, when). Nothing is saved. |
+| 4 | `feedback` | Five-star rating bar at the bottom of the three tool pages. |
+| 5 | `admin` | Owner-only pages: users, their conversations (including ones they deleted), activity log, ratings, block users, site banner, tool on/off. |
+
 Existing from base project (not part of feature work): landing page, login, signup, Supabase connection.
 
 ---
@@ -49,6 +54,12 @@ Existing from base project (not part of feature work): landing page, login, sign
 | `/login`, `/signup` | base | Authentication. |
 | `/trip-assistant` | `trip-assistant` | New conversation: question box + example questions. |
 | `/trip-assistant/[conversationId]` | `trip-assistant` | An existing conversation with its messages; sidebar lists past conversations. |
+| `/trip-planner` | `trip-planner` | Where/when → interests → suggestions → optional plan. |
+| `/events` | `events` | Where/when → list of events and sales. |
+
+| `/admin` | `admin` | Owner-only (ADMIN_EMAILS). Tabs: Users, Activity, Site. |
+
+A small tab bar (Chat · Planner · Events) sits above the conversation list and at the top of the other two pages (`app/_components/feature-nav.tsx`). All three pages need login.
 
 ---
 
@@ -126,6 +137,39 @@ If the user answers **Yes, plan my route**, the AI orders the stops it listed in
   "tips": ["Arrive at opening time."]
 }
 ```
+
+### 5.3 Events (`events`)
+
+`POST /api/events` — body `{ destination, startDate, endDate, language }` (dates `YYYY-MM-DD`, at most 30 days). Reply:
+
+```json
+{
+  "summary": "Two big summer festivals fall in your dates.",
+  "events": [{ "name": "Sumida River Fireworks", "category": "Festival", "where": "Asakusa", "when": "usually last Saturday of July", "description": "...", "price": null }],
+  "caveat": "Dates change. Check the official website."
+}
+```
+
+### 5.4 Trip planner (`trip-planner`)
+
+`POST /api/trip-planner`, two modes (same where/when fields as above):
+
+- `suggest` — `interests`: ids from `sights, food, shopping, nature, culture, nightlife, adventure, relax, family`. Reply: `{ summary, places[{title, description, matches, price?, pros, cons}], happenings[{name, kind: "event"|"sale"|"festival", where, when, description}], caveat, planQuestion }`.
+- `plan` — `places` (the ones the traveler kept ticked) and `happenings`. Reply: `{ title, summary, days[{title, date?, stops[{name, time?, note, minutes?}]}], tips[] }`, stops ordered so the next one is the nearest.
+
+**Honesty rule (both features):** Claude cannot browse the internet. It lists only events and sales it is reasonably sure about, gives the usual period when unsure of an exact date, may return an empty list, and every answer carries a caveat to check official websites. Neither feature saves anything, so there is **no SQL**.
+
+
+### 5.5 Admin (`admin`)
+
+Only emails in `ADMIN_EMAILS` (confirmed) can open `/admin` or call `/api/admin`; everyone else gets "not found". The admin code uses the Supabase **service role key** (`SUPABASE_SERVICE_ROLE_KEY`, server only), which bypasses RLS, so every admin request first checks the caller.
+
+- **Users:** list with email, joined, last sign-in, conversation counts (visible + deleted), activity count, ratings, status. Click a user to read their conversations and activity.
+- **Deleted items:** when a user deletes a conversation it is only hidden (`assistant_conversations.deleted_at`). The admin still sees it, marked "deleted by the user". The admin can delete it for good, or delete the whole user (everything cascades).
+- **Activity:** `activity_log` records every chat question, planner search/plan and events search (what, where, when).
+- **Block:** `user_flags.blocked` (checked before every AI request, so it works at once) plus a Supabase sign-in ban. Admins cannot be blocked or deleted.
+- **Site controls:** `site_settings` rows `banner` (message under the header) and `features` (turn chat / planner / events off; the server refuses requests and the page shows "temporarily unavailable").
+- SQL: `sql/admin.sql`.
 
 Older saved answers have no `kind`; they are treated as the normal options answer. Both new kinds are stored in the same `assistant_messages.answer` column, so **no SQL change** is needed.
 

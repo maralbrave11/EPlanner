@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/i18n-provider";
+import { Suspense } from "react";
+import { RatingWidget } from "@/features/feedback/components/rating-widget";
+import { SiteBanner, SiteSettingsProvider } from "./_components/site-settings";
 import { SiteHeader } from "./_components/site-header";
 
 const geistSans = Geist({
@@ -27,8 +30,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <I18nProvider>
-          <SiteHeader />
-          {children}
+          <SiteSettingsProvider>
+            <SiteHeader />
+            <SiteBanner />
+            {children}
+            <Suspense>
+              <RatingWidget />
+            </Suspense>
+          </SiteSettingsProvider>
         </I18nProvider>
       </body>
     </html>
