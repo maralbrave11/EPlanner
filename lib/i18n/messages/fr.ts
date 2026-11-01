@@ -195,4 +195,6 @@ export const fr: Messages = {
   "account.change": "Changer l'e-mail",
   "account.sent": "Nous avons envoyé des liens de confirmation. Ouvrez le lien de l'e-mail envoyé à votre nouvelle adresse (et à l'ancienne, si vous en recevez un) pour terminer.",
   "account.same": "C'est déjà votre e-mail.",
+  "account.passwordTitle": "Changer le mot de passe",
+  "account.passwordDone": "Mot de passe mis à jour.",
 };

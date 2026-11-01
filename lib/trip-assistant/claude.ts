@@ -14,6 +14,7 @@ import type {
   PriceRange,
   RouteAnswer,
 } from "@/features/trip-assistant/types";
+import { traceLlm } from "@/lib/ai/debug-log";
 import { getLanguage, type LanguageCode } from "@/lib/i18n/languages";
 
 const MODEL = "claude-sonnet-5-5";
@@ -229,6 +230,7 @@ async function callClaude<T extends z.ZodType>(
   history: HistoryTurn[],
   userMessage: string,
   language: LanguageCode,
+  label = "assistant",
 ): Promise<z.infer<T>> {
   const messages: Anthropic.Beta.BetaMessageParam[] = history.map((turn) =>
     turn.role === "user"
@@ -239,7 +241,10 @@ async function callClaude<T extends z.ZodType>(
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const response = await getClient().beta.messages.parse({
+  const system = `${systemPrompt}\n\n${languageInstruction(language)}\n\nToday's date is ${today}.`;
+
+  const response = await traceLlm({ label, model: MODEL, system, messages }, () =>
+    getClient().beta.messages.parse({
     model: MODEL,
     max_tokens: 16000,
     // Chat-style Q&A: medium effort keeps answers thoughtful but fast.
@@ -247,9 +252,9 @@ async function callClaude<T extends z.ZodType>(
     // If a safety classifier declines, retry on Anthropic's recommended fallback model.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    system: `${systemPrompt}\n\n${languageInstruction(language)}\n\nToday's date is ${today}.`,
+    system,
     messages,
-  });
+  }));
 
   if (response.stop_reason === "refusal") {
     throw new TripAssistantRefusal("The assistant can't help with that question.");
@@ -322,10 +327,10 @@ export async function translateAnswer(
 ): Promise<PlaceDetailAnswer | RouteAnswer> {
   const input = JSON.stringify(answer);
   if (answer.kind === "detail") {
-    const raw = await callClaude(DetailSchema, TRANSLATE_PROMPT, [], input, language);
+    const raw = await callClaude(DetailSchema, TRANSLATE_PROMPT, [], input, language, "assistant:translate");
     return toDetailAnswer(raw);
   }
-  const raw = await callClaude(RouteSchema, TRANSLATE_PROMPT, [], input, language);
+  const raw = await callClaude(RouteSchema, TRANSLATE_PROMPT, [], input, language, "assistant:translate");
   return toRouteAnswer(raw);
 }
 
@@ -335,7 +340,7 @@ export async function askTripAssistant(
 ): Promise<AssistantAnswer> {
   switch (request.mode) {
     case "ask":
-      return toOptionsAnswer(await callClaude(OptionsSchema, ASK_PROMPT, history, request.question, request.language));
+      return toOptionsAnswer(await callClaude(OptionsSchema, ASK_PROMPT, history, request.question, request.language, "assistant:ask"));
     case "detail":
       return toDetailAnswer(
         await callClaude(
@@ -344,6 +349,7 @@ export async function askTripAssistant(
           history,
           `Tell me more about "${request.topic}". Only about this place.`,
           request.language,
+          "assistant:detail",
         ),
       );
     case "route":
@@ -354,6 +360,7 @@ export async function askTripAssistant(
           history,
           `Yes, please plan the best order to visit "${request.topic}".`,
           request.language,
+          "assistant:route",
         ),
       );
   }

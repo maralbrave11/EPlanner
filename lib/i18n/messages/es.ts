@@ -194,4 +194,6 @@ export const es: Messages = {
   "account.change": "Cambiar correo",
   "account.sent": "Hemos enviado enlaces de confirmación. Abre el enlace del correo enviado a tu nueva dirección (y al antiguo, si lo recibes) para terminar.",
   "account.same": "Ese ya es tu correo.",
+  "account.passwordTitle": "Cambiar contraseña",
+  "account.passwordDone": "Contraseña actualizada.",
 };

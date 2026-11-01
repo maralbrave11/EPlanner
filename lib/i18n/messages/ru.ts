@@ -195,4 +195,6 @@ export const ru: Messages = {
   "account.change": "Изменить email",
   "account.sent": "Мы отправили ссылки для подтверждения. Откройте ссылку в письме, отправленном на новый адрес (и на старый, если оно придёт), чтобы завершить смену.",
   "account.same": "Это уже ваш email.",
+  "account.passwordTitle": "Смена пароля",
+  "account.passwordDone": "Пароль обновлён.",
 };

@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
   const { strings, language } = parsed.data;
   try {
-    const out = await callClaude(OutputSchema, PROMPT, JSON.stringify({ strings }), language);
+    const out = await callClaude(OutputSchema, PROMPT, JSON.stringify({ strings }), language, "translate");
     if (out.strings.length !== strings.length) {
       console.error("translate: string count changed", strings.length, out.strings.length);
       return errorResponse(502, "claude", "The assistant could not answer right now. Please try again.");

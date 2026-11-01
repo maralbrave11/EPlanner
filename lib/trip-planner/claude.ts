@@ -96,6 +96,7 @@ export async function askSuggestions(
     SUGGEST_PROMPT,
     `Destination: ${trip.destination}\nDates: ${trip.startDate} to ${trip.endDate}\nInterests: ${interests.join(", ")}`,
     language,
+    "planner:suggest",
   );
   return {
     summary: raw.summary,
@@ -125,6 +126,7 @@ export async function askPlan(
     PLAN_PROMPT,
     `Destination: ${trip.destination}\nDates: ${trip.startDate} to ${trip.endDate}\nChosen places:\n${places.map((p) => `- ${p}`).join("\n")}\nEvents and sales that may fit:\n${happenings.length ? happenings.map((h) => `- ${h}`).join("\n") : "- none"}`,
     language,
+    "planner:plan",
   );
   return {
     title: raw.title,

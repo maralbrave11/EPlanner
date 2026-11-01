@@ -195,4 +195,6 @@ export const pt: Messages = {
   "account.change": "Alterar e-mail",
   "account.sent": "Enviamos links de confirmação. Abra o link do e-mail enviado ao novo endereço (e ao antigo, se você receber um) para concluir.",
   "account.same": "Esse já é o seu e-mail.",
+  "account.passwordTitle": "Alterar senha",
+  "account.passwordDone": "Senha atualizada.",
 };

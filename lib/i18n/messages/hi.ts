@@ -195,4 +195,6 @@ export const hi: Messages = {
   "account.change": "ईमेल बदलें",
   "account.sent": "हमने पुष्टि लिंक भेजे हैं। प्रक्रिया पूरी करने के लिए नए पते पर आए ईमेल का लिंक खोलें (और पुराने पते पर आया हो तो उसका भी)।",
   "account.same": "यह पहले से आपका ईमेल है।",
+  "account.passwordTitle": "पासवर्ड बदलें",
+  "account.passwordDone": "पासवर्ड अपडेट हो गया।",
 };

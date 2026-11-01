@@ -25,3 +25,5 @@
 - 2026-11-01 — Chat sidebar tells users their conversations are saved and visible to the site owner even after deletion (10 languages); admin users table has a separate "Deleted" column (conversations the user deleted).
 - 2026-11-01 — Password reset: "Forgot password?" link on the login page, `/forgot-password` (sends the reset email) and `/reset-password` (choose a new password). Text in 10 languages. Needs the redirect URL allowed in Supabase (Authentication → URL Configuration).
 - 2026-11-01 — Account page `/account` (login required): shows the email and changes it (confirmation by email). The email in the header links to it. Text in 10 languages. If the admin changes email, update `ADMIN_EMAILS`.
+- 2026-11-01 — Dev-only prompt log: every Claude call prints the exact system prompt, messages, reply and token use in the `npm run dev` terminal and in `llm-debug.log` (git-ignored). Off in production (`lib/ai/debug-log.ts`).
+- 2026-11-01 — Password reset link always lands on the "choose a new password" page (safety-net redirect on any page); `/account` also has a "Change password" form for logged-in users. 2 new texts in 10 languages.

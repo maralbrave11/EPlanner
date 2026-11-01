@@ -204,6 +204,8 @@ export const en = {
   "account.change": "Change email",
   "account.sent": "We sent confirmation links. Open the link in the email sent to your new address (and to your old one, if you receive one) to finish.",
   "account.same": "That is already your email.",
+  "account.passwordTitle": "Change password",
+  "account.passwordDone": "Password updated.",
 } as const;
 
 export type MessageKey = keyof typeof en;

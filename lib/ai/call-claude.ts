@@ -8,6 +8,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getLanguage, type LanguageCode } from "@/lib/i18n/languages";
+import { traceLlm } from "./debug-log";
 
 const MODEL = "claude-sonnet-5-5";
 
@@ -43,19 +44,24 @@ export async function callClaude<T extends z.ZodType>(
   systemPrompt: string,
   userMessage: string,
   language: LanguageCode,
+  label = "llm",
 ): Promise<z.infer<T>> {
   const today = new Date().toISOString().slice(0, 10);
 
-  const response = await getClient().beta.messages.parse({
+  const system = `${systemPrompt}\n\n${languageInstruction(language)}\n\nToday's date is ${today}.`;
+  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: userMessage }];
+
+  const response = await traceLlm({ label, model: MODEL, system, messages }, () =>
+    getClient().beta.messages.parse({
     model: MODEL,
     max_tokens: 16000,
     output_config: { effort: "medium", format: betaZodOutputFormat(schema) },
     // If a safety classifier declines, retry on Anthropic's recommended fallback model.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    system: `${systemPrompt}\n\n${languageInstruction(language)}\n\nToday's date is ${today}.`,
-    messages: [{ role: "user", content: userMessage }],
-  });
+    system,
+    messages,
+  }));
 
   if (response.stop_reason === "refusal") throw new AiRefusal("The assistant can't help with that.");
   if (!response.parsed_output) {

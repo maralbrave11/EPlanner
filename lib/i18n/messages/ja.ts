@@ -195,4 +195,6 @@ export const ja: Messages = {
   "account.change": "メールアドレスを変更",
   "account.sent": "確認リンクを送信しました。新しいアドレスに届いたメールのリンク（旧アドレスにも届いた場合はそちらも）を開いて完了してください。",
   "account.same": "すでに現在のメールアドレスです。",
+  "account.passwordTitle": "パスワードの変更",
+  "account.passwordDone": "パスワードを更新しました。",
 };

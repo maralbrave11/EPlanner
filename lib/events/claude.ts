@@ -52,6 +52,7 @@ export async function askEvents(
     EVENTS_PROMPT,
     `Destination: ${request.destination}\nDates: ${request.startDate} to ${request.endDate}\nWhat events, festivals and sales are on?`,
     language,
+    "events",
   );
   return {
     summary: raw.summary,

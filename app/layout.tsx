@@ -4,6 +4,7 @@ import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/i18n-provider";
 import { Suspense } from "react";
 import { RatingWidget } from "@/features/feedback/components/rating-widget";
+import { RecoveryRedirect } from "./_components/recovery-redirect";
 import { SiteBanner, SiteSettingsProvider } from "./_components/site-settings";
 import { SiteHeader } from "./_components/site-header";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <I18nProvider>
           <SiteSettingsProvider>
             <SiteHeader />
+            <RecoveryRedirect />
             <SiteBanner />
             {children}
             <Suspense>

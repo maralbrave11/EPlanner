@@ -40,3 +40,6 @@ supabase/.temp/
 supabase/.branches/
 
 .vercel
+
+# Dev-only log of prompts sent to Claude
+llm-debug.log

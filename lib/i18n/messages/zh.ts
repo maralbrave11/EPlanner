@@ -193,4 +193,6 @@ export const zh: Messages = {
   "account.change": "更改邮箱",
   "account.sent": "我们已发送确认链接。请打开发送到新邮箱的邮件中的链接（如果旧邮箱也收到了，也请确认）以完成更改。",
   "account.same": "这已经是你当前的邮箱。",
+  "account.passwordTitle": "修改密码",
+  "account.passwordDone": "密码已更新。",
 };
